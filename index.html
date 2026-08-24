@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>† Слова Добра †</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #000; color: #fff; font-family: sans-serif;
+            margin: 0; padding: 15px; display: flex; flex-direction: column;
+            align-items: center; min-height: 100vh; position: relative; overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        
+        .star-layer {
+            position: fixed; top: -2000px; left: -1000px; width: 1px; height: 1px;
+            background: transparent; pointer-events: none; z-index: -1;
+            animation: spaceFly linear infinite;
+        }
+        .star-layer-1 { box-shadow: 15vw 12vh #fff, 85vw 52vh #aaa, 35vw 128vh #ffd700, 70vw 188vh #fff, 45vw 240vh #fff, 20vw 300vh #aaa, 90vw 380vh #fff, 10vw 450vh #ffd700, 50vw 520vh #fff, 80vw 600vh #aaa; animation-duration: 90s; }
+        .star-layer-2 { box-shadow: 50vw 40vh #fff, 20vw 90vh #ffd700, 80vw 115vh #fff, 10vw 180vh #aaa, 60vw 260vh #ffd700, 35vw 330vh #fff, 75vw 390vh #aaa, 90vw 470vh #ffd700, 25vw 550vh #fff, 45vw 620vh #aaa; animation-duration: 65s; }
+        .star-layer-3 { box-shadow: 25vw 35vh #fff, 75vw 85vh #aaa, 15vw 165vh #ffd700, 85vw 210vh #fff, 30vw 280vh #fff, 55vw 350vh #ffd700, 15vw 410vh #fff, 40vw 490vh #aaa, 70vw 570vh #ffd700, 95vw 640vh #fff; animation-duration: 45s; }
+        
+        @keyframes spaceFly { 
+            0% { transform: translate(0, 0) scale(1); } 
+            100% { transform: translate(700px, 2400px) scale(2.8); } 
+        }
+
+        @keyframes textGlow { 0%, 100% { color: #ffd700; } 33% { color: #b22222; } 66% { color: #4b0082; } }
+        
+        h1 {
+            font-family: 'UnifrakturMaguntia', serif; font-size: clamp(24px, 6vw, 36px);
+            text-align: center; margin: 10px 0 15px; animation: textGlow 6s infinite ease-in-out;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+        .simplex-container {
+            width: 100%; max-width: 550px; height: 500px; overflow-y: auto;
+            margin-bottom: 20px; border-radius: 12px; border: 1px solid #333;
+            background-color: rgba(10, 10, 10, 0.9); backdrop-filter: blur(4px);
+        }
+        .simplex-container::-webkit-scrollbar { width: 6px; }
+        .simplex-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        @media (min-width: 768px) {
+            .simplex-container { max-width: 820px; height: 560px; }
+            .game-card { max-width: 820px; }
+        }
+        .game-card {
+            width: 100%; max-width: 550px; padding: 15px;
+            background-color: rgba(17, 17, 17, 0.9); border: 1px dashed #444;
+            border-radius: 12px; text-align: center; backdrop-filter: blur(4px);
+        }
+        .diff-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+        .diff-btn {
+            background: #151515; color: #888; border: 1px solid #333;
+            padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s;
+        }
+        .diff-btn.active { background: #2a2200; border-color: #ffd700; color: #ffd700; font-weight: bold; }
+        .score-board {
+            display: flex; justify-content: space-between; font-size: 12px; color: #bbb;
+            background: rgba(0, 0, 0, 0.4); padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; align-items: center;
+        }
+        .score-val { color: #ffd700; font-weight: bold; }
+        .hint-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+        .hint-btn, .ach-menu-btn {
+            background: #2a2200; color: #ffd700; border: 1px solid #ffd700;
+            padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; flex: 1;
+        }
+        .hint-btn:hover, .ach-menu-btn:hover { background: #3d3200; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: #aaa; }
+        .progress-badge { color: #ffd700; font-weight: bold; }
+        .reset-btn { background: #222; color: #888; border: 1px solid #444; padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        .reset-btn:hover { color: #fff; border-color: #666; }
+        .alchemy-altar {
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            background: rgba(0, 0, 0, 0.6); border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; min-height: 65px;
+        }
+        .slot {
+            width: 130px; height: 42px; border: 1px dashed #555; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;
+            background: #111; cursor: pointer; user-select: none; padding: 2px 5px; text-align: center;
+        }
+        .slot.active { border: 1px solid #ffd700; color: #fff; background: #222; }
+        .combine-plus { font-weight: bold; color: #ffd700; font-size: 16px; }
+        .game-msg { font-size: 12px; min-height: 18px; margin-bottom: 10px; color: #888; line-height: 1.4; }
+        
+        .elements-grid {
+            display: flex; flex-wrap: wrap; gap: 6px; max-height: 220px; overflow-y: auto;
+            padding: 5px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px;
+        }
+        .elements-grid::-webkit-scrollbar { width: 6px; }
+        .elements-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .element-btn {
+            background: #181818; color: #ccc; border: 1px solid #333; border-radius: 6px;
+            padding: 6px 10px; font-size: 12px; cursor: pointer; user-select: none; transition: 0.15s;
+        }
+        .element-btn:active { transform: scale(0.95); }
+        .element-btn.selected { background: #332a00; border-color: #ffd700; color: #ffd700; }
+
+        #achModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 999;
+        }
+        .modal-content {
+            background: #111; border: 1px solid #ffd700; width: 90%; max-width: 480px;
+            border-radius: 12px; padding: 20px; max-height: 80vh; overflow-y: auto;
+        }
+        .modal-content h3 { margin-top: 0; color: #ffd700; text-align: center; }
+        .ach-item {
+            background: #181818; border: 1px solid #333; border-radius: 8px;
+            padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px;
+        }
+        .ach-item.unlocked { border-color: #ffd700; background: #221c00; }
+        .ach-title { font-weight: bold; font-size: 13px; color: #888; }
+        .ach-item.unlocked .ach-title { color: #ffd700; }
+        .ach-desc { font-size: 11px; color: #aaa; }
+        .close-modal {
+            background: #ffd700; color: #000; border: none; width: 100%; padding: 8px;
+            border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="star-layer star-layer-1"></div>
+    <div class="star-layer star-layer-2"></div>
+    <div class="star-layer star-layer-3"></div>
+
+    <div id="achModal">
+        <div class="modal-content">
+            <h3>🏆 Достижения (<span id="achCount">0</span>/10)</h3>
+            <div id="achListContainer"></div>
+            <button class="close-modal" onclick="toggleAchModal(false)">Закрыть</button>
+        </div>
+    </div>
+
+    <h1>† Слова Добра †</h1>
+
+    <div class="simplex-container">
+        <div data-simplex-channel-preview
+          data-channel-link="https://smp10.simplex.im/c#l38CBA0X0PjN7DP2yQ0Knxydds6KIUG37esdSQuKTpc"
+          data-channel-id="ICUfEnNn-7ps7egWEMwi4vZIboaFUHH-4eh1erJ-hqQ="
+          data-relay-domains="relay1.simplex.chat,relay2.simplex.chat"
+          data-app-download-buttons="on"
+          data-color-scheme="dark"
+        ></div>
+    </div>
+
+    <div class="game-card">
+        <div class="diff-selector">
+            <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
+            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
+        </div>
+
+        <div class="score-board">
+            <div>Очки: <span id="currentScore" class="score-val">0</span> | Подсказок: <span id="hintsUsed" class="score-val">0</span></div>
+            <div>Рекорд: <span id="highScore" class="score-val">0</span></div>
+        </div>
+
+        <div class="hint-bar">
+            <button class="hint-btn" onclick="getHint()">💡 Подсказка (-200 баллов)</button>
+            <button class="ach-menu-btn" onclick="toggleAchModal(true)">🏆 Награды</button>
+        </div>
+
+        <div class="game-header">
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 55</span></div>
+            <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
+        </div>
+
+        <div class="alchemy-altar">
+            <div class="slot" id="slot1" onclick="clearSlot(1)">Слот 1</div>
+            <div class="combine-plus">+</div>
+            <div class="slot" id="slot2" onclick="clearSlot(2)">Слот 2</div>
+        </div>
+
+        <div class="game-msg" id="gameMsg">Выберите два элемента для соединения</div>
+        <div class="elements-grid" id="elementsGrid"></div>
+    </div>
+
+    <script>
+        const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
+        
+        const fullRecipes = {
+            // --- БАЗОВЫЕ И УРОВЕНЬ «ЧЕЛОВЕК» ---
+            "💧 Вода+🔥 Огонь": "💨 Пар", "🔥 Огонь+🌱 Земля": "🌋 Лава",
+            "💧 Вода+🌱 Земля": "💩 Грязь", "💨 Воздух+🌱 Земля": "🌪️ Пыль",
+            "🔥 Огонь+💨 Воздух": "⚡ Энергия", "💧 Вода+💨 Воздух": "🌧️ Дождь",
+            "🌋 Лава+💧 Вода": "🪨 Камень", "🔥 Огонь+🪨 Камень": "🧲 Металл",
+            "💩 Грязь+🌱 Земля": "🌾 Болото", "🌧️ Дождь+🌱 Земля": "🌱 Росток",
+            "🌱 Росток+🌱 Земля": "🌳 Дерево", "⚡ Энергия+💨 Воздух": "🌩️ Гроза",
+            "🪨 Камень+💨 Воздух": "Песок", "🌋 Лава+💨 Воздух": "🪨 Обсидиан",
+            "🔥 Огонь+🌳 Дерево": "Уголь", "🔥 Огонь+Песок": "🧱 Стекло",
+            "💧 Вода+Песок": "Пляж", "⚡ Энергия+🪨 Камень": "⚡ Электричество",
+            "🌧️ Дождь+🌧️ Дождь": "🌊 Море", "🪨 Камень+🪨 Камень": "Гора",
+            "🌾 Болото+⚡ Энергия": "🦠 Жизнь", "🦠 Жизнь+💧 Вода": "🐟 Рыба",
+            "🦠 Жизнь+🌱 Земля": "🐛 Червь", "🐛 Червь+🌱 Земля": "🪲 Жук",
+            "🦠 Жизнь+💨 Воздух": "🕊️ Птица", "🦠 Жизнь+🌳 Дерево": "🐒 Обезьяна",
+            "🐒 Обезьяна+⚡ Энергия": "👤 Человек", "🪲 Жук+🌾 Болото": "🦟 Комар",
+            "🐟 Рыба+🌱 Земля": "🐸 Лягушка", "🌳 Дерево+🌳 Дерево": "🌲 Лес",
+            "🌾 Болото+🌱 Росток": "Камыш", "🐛 Червь+🌊 Море": "🪸 Коралл",
+            "🐟 Рыба+🔥 Огонь": "🍳 Жареная рыба", "🦠 Жизнь+🌋 Лава": "Дракон",
+            "👤 Человек+Дракон": "Герой", "🕊️ Птица+🔥 Огонь": "Феникс",
+            "🦠 Жизнь+🪨 Камень": "Голем", "👤 Человек+🦠 Жизнь": "❤️ Душа",
+            "👤 Человек+🔥 Огонь": "🍳 Еда", "👤 Человек+🪨 Камень": "🪓 Орудие",
+            "👤 Человек+🌳 Дерево": "🏠 Дом", "🏠 Дом+🏠 Дом": "🏘️ Деревня",
+            "🏘️ Деревня+🏘️ Деревня": "🏙️ Город", "🧲 Металл+🪓 Орудие": "⚔️ Оружие",
+
+            // --- УРОВЕНЬ «МАГ» ---
+            "🧲 Металл+⚡ Электричество": "💻 Компьютер", "🧱 Стекло+⚡ Энергия": "💡 Лампа",
+            "🌳 Дерево+🪓 Орудие": "📜 Бумага", "📜 Бумага+👤 Человек": "📖 Книга",
+            "🧲 Металл+🔥 Огонь": "🛢️ Котел", "🌾 Болото+🌳 Дерево": "Торф",
+            "🌳 Дерево+🧲 Металл": "⛵ Лодка", "⛵ Лодка+🌊 Море": "Корабль",
+            "Корабль+👤 Человек": "Моряк", "🏠 Дом+🎓 Знание": "🏫 Школа",
+            "🧲 Металл+🏠 Дом": "Замок", "Замок+⚔️ Оружие": "Крепость",
+            "📖 Книга+👤 Человек": "🎓 Знание", "🎓 Знание+👤 Человек": "🧠 Мудрость",
+            "📜 Бумага+🎓 Знание": "🗺️ Карта", "💻 Компьютер+⚡ Электричество": "🌐 Интернет",
+            "👤 Человек+⚡ Энергия": "🏃 Движение", "👤 Человек+👤 Человек": "🤝 Дружина",
+            "🤝 Дружина+🧠 Мудрость": "🏛️ Общество", "⚔️ Оружие+👤 Человек": "Воин",
+            "💡 Лампа+🧠 Мудрость": "💡 Идея", "🌳 Дерево+📜 Бумага": "Краски",
+            "Краски+📜 Бумага": "🎨 Картина", "🎨 Картина+❤️ Душа": "Искусство",
+            "Искусство+🧠 Мудрость": "Философия", "📜 Бумага+📜 Бумага": "Библиотека",
+            "🏃 Движение+🎵 Музыка": "Танец", "👤 Человек+🎵 Музыка": "Музыкант",
+            "⚡ Энергия+📜 Бумага": "🎵 Музыка", "🎨 Картина+👤 Человек": "Художник",
+            "❤️ Душа+🧠 Мудрость": "🕊️ Благодать", "🕊️ Благодать+👤 Человек": "✨ Добро",
+            "✨ Добро+📜 Бумага": "📖 Слово Добра", "❤️ Душа+❤️ Душа": "💖 Любовь",
+            "💖 Любовь+👤 Человек": "👨‍👩‍👧 Семья", "✨ Добро+🏠 Дом": "Уют",
+            "✨ Добро+🌐 Интернет": "🌐 Светлый Чат", "📖 Слово Добра+🌐 Светлый Чат": "✝️ Слова Добра ✝️",
+            "🌧️ Дождь+☀️ Солнце": "🌈 Радуга", "🌟 Свет+🧱 Стекло": "🪞 Зеркало",
+            "🪞 Зеркало+❤️ Душа": "Совесть", "Совесть+✨ Добро": "Честь",
+            "Честь+👤 Человек": "Праведник", "Праведник+✝️ Слова Добра ✝️": "😇 Святость",
+            "Философия+✨ Добро": "Истина", "Истина+❤️ Душа": "🕊️ Мир",
+            "🕊️ Мир+🌱 Земля": "Рай", "✨ Добро+🌌 Космос": "✨ Гармония",
+            "⚡ Энергия+☀️ Солнце": "🌟 Свет", "🌟 Свет+💨 Воздух": "☀️ Солнце",
+            
+            "👑 Король+🏰 Замок": "🤴 Монарх", "🤴 Монарх+🏛️ Общество": "⚖️ Законы",
+            "⚖️ Законы+🧠 Мудрость": "📜 Справедливость", "📜 Справедливость+✨ Добро": "🛡️ Защита",
+            "🛡️ Защита+👤 Человек": "🛡️ Рыцарь", "🛡️ Рыцарь+⚔️ Оружие": "⚔️ Паладин",
+            "🔥 Огонь+Уголь": "🔥 Пламя", "🔥 Пламя+🛢️ Котел": "🧪 Зелье",
+            "🧪 Зелье+🦠 Жизнь": "🧪 Эликсир Жизни", "🧪 Эликсир Жизни+👤 Человек": "🧝 Эльф",
+            "🧝 Эльф+🌳 Дерево": "🍃 Дриада", "🍃 Дриада+✨ Гармония": "🌿 Природа",
+            "🌊 Море+⛵ Лодка": "⚓ Порт", "⚓ Порт+🏙️ Город": "🚢 Мегаполис",
+            "🚢 Мегаполис+🌐 Интернет": "📡 Глобальная Сеть", "📡 Глобальная Сеть+🧠 Мудрость": "💡 Ноосфера",
+            "💡 Ноосфера+✨ Добро": "🌟 Всеобщее Благо", "🌟 Всеобщее Благо+✝️ Слова Добра ✝️": "🕊️ Благоденствие",
+            "🎵 Музыка+❤️ Душа": "✨ Вдохновение", "✨ Вдохновение+🎨 Картина": "🖼️ Шедевр",
+            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 Ученый",
+            "🧑‍🎓 Ученый+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
+            "🌐 Сингулярность+✨ Гармония": "🌌 Квантовый Разум", "🌌 Квантовый Разум+❤️ Душа": "✨ Пробуждение",
+
+            // --- УРОВЕНЬ «БОГ» ---
+            "☀️ Солнце+🪨 Камень": "Планета", "Планета+🌟 Свет": "🌌 Космос",
+            "🌊 Море+☀️ Солнце": "Соль", "Гора+🌋 Лава": "Вулкан",
+            "💨 Воздух+❄️ Лед": "Снег", "💧 Вода+❄️ Лед": "Айсберг",
+            "💧 Вода+🌩️ Гроза": "❄️ Лед", "🔥 Огонь+💨 Пыль": "💥 Взрыв",
+            "💥 Взрыв+🌌 Космос": "Сверхновая", "Сверхновая+🌌 Космос": "🕳️ Черная Дыра",
+            "☀️ Солнце+☀️ Солнце": "Галактика", "Галактика+🌌 Космос": "Мультивселенная",
+            "🌌 Космос+🦠 Жизнь": "Инопланетянин", "🧲 Металл+🌌 Космос": "Спутник",
+            "Спутник+💻 Компьютер": "Связь", "Связь+🌐 Интернет": "Информация",
+            "Информация+🧠 Мудрость": "Прозрение", "Прозрение+❤️ Душа": "Просветление",
+            "Просветление+😇 Святость": "Благословение", "Благословение+🌱 Земля": "Плодородие",
+            "Плодородие+🌾 Болото": "Урожай", "Урожай+🍳 Еда": "Изобилие",
+            "Изобилие+🏛️ Общество": "Процветание", "Процветание+🕊️ Мир": "Золотой Век",
+            "Золотой Век+✨ Гармония": "Вечность", "Вечность+☀️ Солнце": "Бессмертие",
+            "Бессмертие+❤️ Душа": "Дух", "Дух+⚡ Энергия": "Аура",
+            "Аура+🌟 Свет": "Нимб", "Нимб+😇 Святость": "Ангел",
+            "Ангел+Ангел": "Архангел", "Архангел+🌌 Космос": "Творец",
+            "Творец+✨ Гармония": "Бытие", "Бытие+Мультивселенная": "Абсолют",
+            "Абсолют+✝️ Слова Добра ✝️": "☀️ Божественный Свет",
+            "☀️ Божественный Свет+❤️ Душа": "🔥 Священный Огонь",
+            "🔥 Священный Огонь+💧 Вода": "💧 Святая Вода",
+            "💧 Святая Вода+🌱 Земля": "🌸 Эдем",
+            "🌸 Эдем+👤 Человек": "🎉 Счастье", "🎉 Счастье+✨ Добро": "💖 Милосердие",
+            "💖 Милосердие+🧠 Мудрость": "Сострадание", "Сострадание+🌍 Земля": "Спасение",
+            "Спасение+Мультивселенная": "🌟 Вселенская Любовь",
+
+            "🕳️ Черная Дыра+🌌 Космос": "🌀 Пространственный Разлом", "🌀 Пространственный Разлом+⚡ Энергия": "⏳ Путешествие во Времени",
+            "⏳ Путешествие во Времени+Вечность": "🔄 Хроно-Парадокс", "🔄 Хроно-Парадокс+Творец": "🏛️ Зал Памяти Вселенной",
+            "Галактика+Галактика": "💫 Скопление Галактик", "💫 Скопление Галактик+Мультивселенная": "🌌 Великий Предел",
+            "🌌 Великий Предел+Абсолют": "👁️ Всевидящее Око", "👁️ Всевидящее Око+☀️ Божественный Свет": "✨ Первородная Искра",
+            "✨ Первородная Искра+✨ Гармония": "🕊️ Небесная Тишина", "🕊️ Небесная Тишина+🌸 Эдем": "🌿 Вечный Сад",
+            "🌿 Вечный Сад+🕊️ Мир": "🕊️ Горний Мир", "🕊️ Горний Мир+😇 Святость": "🌟 Небесный Престол",
+            "🌟 Небесный Престол+Архангел": "🎺 Глашатай Небес", "🎺 Глашатай Небес+✝️ Слова Добра ✝️": "📖 Книга Жизни",
+            "📖 Книга Жизни+Дух": "🌟 Живой Дух", "🌟 Живой Дух+Аура": "💫 Божественное Сияние",
+            "💫 Божественное Сияние+Нимб": "👑 Венец Славы", "👑 Венец Славы+Бессмертие": "🕊️ Неувядаемый Цвет",
+            "🕊️ Неувядаемый Цвет+🌿 Природа": "🌸 Райский Цвет", "🌸 Райский Цвет+☀️ Божественный Свет": "🔥 Неопалимая Купина",
+            "🔥 Неопалимая Купина+💧 Святая Вода": "💧 Живая Вода", "💧 Живая Вода+🦠 Жизнь": "✨ Сотворение Души",
+            "✨ Сотворение Души+❤️ Душа": "💖 Чистая Любовь", "💖 Чистая Любовь+✨ Добро": "🌟 Абсолютное Добро",
+            "🌟 Абсолютное Добро+✝️ Слова Добра ✝️": "⚡ Вечный Свет Добра"
+        };
+
+        const achievementsList = [
+            { id: 1, title: "Искра творения", desc: "Соедините первые два элемента и получите новый." },
+            { id: 2, title: "Исследователь стихий", desc: "Откройте 30 уникальных элементов в игре." },
+            { id: 3, title: "Истинный Маг", desc: "Откройте 50 элементов (пройдите режим «Человек»)." },
+            { id: 4, title: "Чистый разум", desc: "Добберитесь до финала любого режима, не используя подсказки ни разу." },
+            { id: 5, title: "Путь света", desc: "Откройте элемент «✨ Добро»." },
+            { id: 6, title: "Коллекционер", desc: "Откройте 5 элементов путем слияния одинаковых стихий (например, Дождь + Дождь)." },
+            { id: 7, title: "Гармония мира", desc: "Откройте элемент «🕊️ Мир» или «✨ Гармония»." },
+            { id: 8, title: "Упорство", desc: "Потратьте в сумме >1000 очков на штрафы за ошибки, преодолев рубеж в 75 элементов." },
+            { id: 9, title: "Вселенский масштаб", desc: "Откройте «Мультивселенную» или «🌌 Космос»." },
+            { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." }
+        ];
+
+        const limits = { human: 55, mage: 110, god: 200 };
+        
+        let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
+        let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
+        let errorPenaltySum = 0;
+        let selfCombineCount = 0;
+
+        const getActiveRecipes = () => {
+            return fullRecipes;
+        };
+
+        function unlockAchievement(id) {
+            if (!achievements.includes(id)) {
+                achievements.push(id);
+                localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
+                const ach = achievementsList.find(a => a.id === id);
+                
+                const msg = document.getElementById('gameMsg');
+                const currentText = msg.innerHTML.includes('Новый элемент') ? msg.innerHTML : '✨ Успешное соединение!';
+                msg.innerHTML = `${currentText}<br><span style="color: #ffd700; font-weight: bold;">🏆 Достижение: ${ach.title}</span>`;
+            }
+        }
+
+        function toggleAchModal(show) {
+            const modal = document.getElementById('achModal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) renderAchievementsList();
+        }
+
+        function renderAchievementsList() {
+            const container = document.getElementById('achListContainer');
+            document.getElementById('achCount').textContent = achievements.length;
+            container.innerHTML = '';
+            achievementsList.forEach(a => {
+                const unlocked = achievements.includes(a.id);
+                const div = document.createElement('div');
+                div.className = 'ach-item' + (unlocked ? ' unlocked' : '');
+                div.innerHTML = `<div class="ach-title">${unlocked ? '✔ ' : '🔒 '}${a.title}</div><div class="ach-desc">${a.desc}</div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function checkAchievements() {
+            if (openedElements.length > 4) unlockAchievement(1);
+            if (openedElements.length >= 30) unlockAchievement(2);
+            if (openedElements.length >= 50) unlockAchievement(3);
+            if (hintsUsed === 0 && openedElements.length >= limits[currentDiff]) unlockAchievement(4);
+            if (openedElements.includes("✨ Добро")) unlockAchievement(5);
+            if (selfCombineCount >= 5) unlockAchievement(6);
+            if (openedElements.includes("🕊️ Мир") || openedElements.includes("✨ Гармония")) unlockAchievement(7);
+            if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
+            if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
+            if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
+        }
+
+        function loadState() {
+            openedElements = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || [...initialElements];
+            score = parseInt(localStorage.getItem(`alchemy_score_${currentDiff}`)) || 0;
+            hintsUsed = parseInt(localStorage.getItem(`alchemy_hints_${currentDiff}`)) || 0;
+            errorPenaltySum = parseInt(localStorage.getItem(`alchemy_errors_${currentDiff}`)) || 0;
+            selfCombineCount = parseInt(localStorage.getItem(`alchemy_self_${currentDiff}`)) || 0;
+            updateUI();
+        }
+
+        function saveState() {
+            localStorage.setItem(`alchemy_opened_${currentDiff}`, JSON.stringify(openedElements));
+            localStorage.setItem(`alchemy_score_${currentDiff}`, score);
+            localStorage.setItem(`alchemy_hints_${currentDiff}`, hintsUsed);
+            localStorage.setItem(`alchemy_errors_${currentDiff}`, errorPenaltySum);
+            localStorage.setItem(`alchemy_self_${currentDiff}`, selfCombineCount);
+
+            let fixedBest = parseInt(localStorage.getItem(`alchemy_best_fixed_${currentDiff}`)) || 0;
+            if (hintsUsed === 0) {
+                if (score > fixedBest) {
+                    localStorage.setItem(`alchemy_best_fixed_${currentDiff}`, score);
+                }
+            }
+
+            updateUI();
+            checkAchievements();
+        }
+
+        function setDifficulty(diff) {
+            currentDiff = diff;
+            slot1 = slot2 = null;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === diff));
+            document.getElementById('gameMsg').textContent = "Выберите два элемента для соединения";
+            loadState();
+        }
+
+        function updateUI() {
+            document.getElementById('progress').textContent = `${openedElements.length} / ${limits[currentDiff]}`;
+            document.getElementById('currentScore').textContent = score;
+            document.getElementById('hintsUsed').textContent = hintsUsed;
+
+            const highScoreEl = document.getElementById('highScore');
+            let fixedBest = parseInt(localStorage.getItem(`alchemy_best_fixed_${currentDiff}`)) || 0;
+            let currentLiveHigh = parseInt(localStorage.getItem(`alchemy_high_${currentDiff}`)) || 0;
+
+            if (hintsUsed === 0 && score > currentLiveHigh) {
+                currentLiveHigh = score;
+                localStorage.setItem(`alchemy_high_${currentDiff}`, currentLiveHigh);
+            }
+
+            let displayRecord = hintsUsed > 0 ? fixedBest : currentLiveHigh;
+
+            highScoreEl.style.fontSize = "12px";
+            highScoreEl.style.color = "#ffd700";
+            highScoreEl.textContent = displayRecord;
+
+            const s1 = document.getElementById('slot1'), s2 = document.getElementById('slot2');
+            s1.textContent = slot1 || "Слот 1"; s1.className = slot1 ? "slot active" : "slot";
+            s2.textContent = slot2 || "Слот 2"; s2.className = slot2 ? "slot active" : "slot";
+
+            const grid = document.getElementById('elementsGrid');
+            grid.innerHTML = '';
+            openedElements.forEach(el => {
+                const btn = document.createElement('div');
+                btn.className = 'element-btn' + (el === slot1 || el === slot2 ? ' selected' : '');
+                btn.textContent = el;
+                btn.onclick = () => selectElement(el);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectElement(el) {
+            if (!slot1) slot1 = el;
+            else if (!slot2) { slot2 = el; tryCombine(); }
+            else { slot1 = el; slot2 = null; }
+            updateUI();
+        }
+
+        const clearSlot = num => { if (num === 1) slot1 = null; if (num === 2) slot2 = null; updateUI(); };
+
+        function tryCombine() {
+            const msg = document.getElementById('gameMsg');
+            const result = getActiveRecipes()[`${slot1}+${slot2}`] || getActiveRecipes()[`${slot2}+${slot1}`];
+
+            if (result) {
+                if (slot1 === slot2) {
+                    selfCombineCount++;
+                }
+
+                if (!openedElements.includes(result)) {
+                    openedElements.push(result);
+                    score += 100;
+                    msg.style.color = '#ffd700';
+                    msg.textContent = `✨ Новый элемент: ${result}! (+100 очков)`;
+                } else {
+                    msg.style.color = '#aaa';
+                    msg.textContent = `Элемент "${result}" уже открыт.`;
+                }
+            } else {
+                score = Math.max(0, score - 5);
+                errorPenaltySum += 5;
+                msg.style.color = '#b22222';
+                msg.textContent = '❌ Элементы не соединяются (-5 очков)';
+            }
+            saveState();
+            slot1 = slot2 = null;
+            updateUI();
+        }
+
+        function getHint() {
+            const msg = document.getElementById('gameMsg');
+            let possibleHints = [];
+
+            for (const [recipeKey, res] of Object.entries(fullRecipes)) {
+                const [el1, el2] = recipeKey.split('+');
+
+                if (openedElements.includes(el1) && openedElements.includes(el2) && !openedElements.includes(res)) {
+                    const currentLimit = limits[currentDiff];
+                    if (openedElements.length < currentLimit) {
+                        possibleHints.push({ el1, el2, res });
+                    }
+                }
+            }
+
+            if (possibleHints.length > 0) {
+                const found = possibleHints[Math.floor(Math.random() * possibleHints.length)];
+                
+                if (hintsUsed === 0) {
+                    let currentBest = parseInt(localStorage.getItem(`alchemy_best_fixed_${currentDiff}`)) || 0;
+                    if (score > currentBest) {
+                        localStorage.setItem(`alchemy_best_fixed_${currentDiff}`, score);
+                    }
+                }
+
+                score = score >= 200 ? score - 200 : 0;
+                hintsUsed++;
+                saveState();
+                slot1 = found.el1; slot2 = found.el2;
+                msg.style.color = '#ffd700';
+                msg.textContent = `💡 Подсказка: соедините ${found.el1} и ${found.el2}!`;
+                updateUI();
+            } else {
+                msg.style.color = '#888';
+                msg.textContent = '🔍 Все доступные комбинации уже найдены!';
+            }
+        }
+
+        function resetAlchemy() {
+            if (confirm(`Сбросить прогресс для уровня "${currentDiff.toUpperCase()}"?`)) {
+                openedElements = [...initialElements];
+                score = hintsUsed = errorPenaltySum = selfCombineCount = 0;
+                slot1 = slot2 = null;
+                localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
+                localStorage.removeItem(`alchemy_high_${currentDiff}`);
+                saveState();
+                document.getElementById('gameMsg').textContent = "Прогресс сброшен.";
+                updateUI();
+            }
+        }
+
+        loadState();
+    </script>
+    <script src="https://simplex.chat/js/channel-preview.js"></script>
+</body>
+</html>
