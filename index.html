@@ -7,11 +7,11 @@
     <title>† Слова Добра †</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body {
-            background-color: #000; color: #fff; font-family: sans-serif;
+            background-color: #000; color: #fff; font-family: 'Playfair Display', serif;
             margin: 0; padding: 15px; display: flex; flex-direction: column;
             align-items: center; min-height: 100vh; position: relative; overflow-x: hidden;
             touch-action: manipulation;
@@ -73,7 +73,7 @@
         }
         .custom-spoiler summary {
             padding: 12px 15px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffd700;
             cursor: pointer;
@@ -98,19 +98,44 @@
         
         .gothic-title {
             font-family: 'UnifrakturMaguntia', serif;
-            font-size: 18px !important;
+            font-size: 20px !important;
             letter-spacing: 1px;
             text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
         }
 
         .spoiler-content {
-            padding: 0 15px 15px 15px;
-            font-size: 14px;
-            color: #ddd;
-            line-height: 1.6;
+            padding: 15px;
+            font-size: 15px;
+            color: #e0e0e0;
+            line-height: 1.7;
             border-top: 1px solid #222;
             margin-top: 5px;
-            padding-top: 12px;
+        }
+        
+        .spoiler-content p {
+            margin-bottom: 15px;
+            text-indent: 15px;
+        }
+        
+        .spoiler-img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #444;
+            margin-bottom: 15px;
+            filter: brightness(0.9);
+        }
+
+        .spoiler-content a {
+            color: #ffd700;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.2s;
+        }
+        .spoiler-content a:hover {
+            color: #fff;
+            border-bottom-color: #fff;
         }
 
         .diff-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
@@ -201,9 +226,25 @@
 
     <div class="spoiler-wrapper">
         <details class="custom-spoiler">
-            <summary><span class="gothic-title">Тест 1</span></summary>
+            <summary><span class="gothic-title">Обо мне</span></summary>
             <div class="spoiler-content">
-                Здесь вы можете написать текст о себе, своих увлечениях или проектах.
+                <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="Атмосферное фото" class="spoiler-img" id="dynamicImage">
+                <script>
+                    // Вставляем изображение, переданное пользователем, через безопасный источник или прямую ссылку если она есть, 
+                    // здесь оставляем элемент готовым для отображения прикрепленной картинки
+                </script>
+                <p>Больше, чем правда, но меньше, чем [fake]</p>
+                <p>На этой страничке ты найдешь некоторую информацию обо мне, являющуюся правдивой настолько, насколько я могу себе позволить.</p>
+                <p>Я тот, кому ты можешь доверять не только материальные блага, но и метафизические аспекты личности: переживания, чувства, эмоции. Я православный писатель, находящийся в поиске истинности среди рукотворных идолов, чьи массивные туши обременяют тяжёлые ноши титулов.</p>
+                <p>Да, я хочу чтобы твой риск был на моей совести ради разжигания в твоём сердце жизнеутверждающего пламени веры в человечество.</p>
+                <p>Мой телесный возраст составляет десятки лет земных скитаний, сотни написанных мною текстов и столько же счастливых улыбок в ответ вместо слов.</p>
+                <p>Я тебя попрошу об одной услуге: позволь себе улыбнуться, закрыть глаза и осознавать позитив, что символизирует изменение мимики твоего лица. В этом состоянии отсутствует возраст, а значит, сколько бы лет тебе не было - мы ровесники с разным количеством опыта в походном рюкзаке, отличающиеся степенью усталости от длительного шествия к абсолютному счастью. Возможно, ты идёшь тернистыми тропами, заросшими крапивой, пока я перемещаюсь протоптанной грунтовой дорожкой, извилистой, проходящей по краю отвесных скал. Личностных ипостасей множество и пути у всех разные, но источник и цель у нас общие. К финишной черте рая придут не называющие себя верующими, а те, кто не причинил страданий ближним, отстраняясь от невежества, приумножая благодать созидательной активностью. Соучастие в злодеяниях и нейтралитет есть две стороны одной медали: аверс статично прячет за собой реверс. Приумножай добродетели, чтобы плоды твои взошли и дали шанс в будущем утолить жажду и голод страждущих.</p>
+                <p>Я рассказываю тебе об этом потому, что сам стараюсь жить совестливым честным образом. Среди моих увлечений могу выделить творчество, а именно написание текстов по зову сердца. Также мне нравится пройтись под открытым небом, благодаря Бога за милосердие и прося о сострадании к тем, кого затронула взрывная волна чьей-то раздувшейся воли.</p>
+                <p>Совсем немножко увлекаюсь программированием, находя любопытные баги в данном мессенджере. Делюсь информацией о них с узким кругом лиц на канале <a href="https://t.me/code4tg" target="_blank">TH</a>. Ежедневно стараюсь дарить человечеству позитивное настроение через теплые пожелания с помощью <a href="https://t.me/saintum_bot" target="_blank">персонального бота</a>.</p>
+                <p>Как и всем земным обитателям, наделённым разумом, мне нравится читать книги, слушать музыку, смотреть познавательную информацию в видео-формате. Я скромный и замкнутый в себе человек, привыкший к отсутствию понимания извне. Обладаю проницательностью и быстро вижу намерения людей, взаимодействующих со мной. Временами занимаюсь электронной коммерцией для обеспечения жизнедеятельности организма, соблюдая принципы порядочности.</p>
+                <p>Данный автобиографический канал пуст, а наблюдаемый тобой текст есть лишь отражение тебя в эманирующей вселенной персонализированного восприятия за блеском глаз читателя.</p>
+                <p>Ищущий находит себя между строк, становясь другим. Всезнающий же, отвергает эволюцию, разлагаясь на её волнах. 🌌</p>
+                <p>Если есть вопросы, предложения, желание познакомиться и стать друзьями - пиши в <a href="https://smp15.simplex.im/a#s-hciBzqh7b6VRmlQZE6FUrGDhZbI-FfWl0q75xEi-k" target="_blank">личные сообщения</a>, преодолевая огрубляющее влияние общественных стереотипов.</p>
             </div>
         </details>
     </div>
@@ -220,7 +261,7 @@
 
     <div class="spoiler-wrapper">
         <details class="custom-spoiler">
-            <summary>Тест 2</summary>
+            <summary><span class="gothic-title">Тест 2</span></summary>
             <div class="spoiler-content">
                 Здесь вы можете написать подробный текст об этой алхимической игре, ее правилах и задумке.
             </div>
