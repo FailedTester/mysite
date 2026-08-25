@@ -63,7 +63,6 @@
         .simplex-container::-webkit-scrollbar { width: 6px; }
         .simplex-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         
-        /* Сделали текст кнопки и ссылок в виджете SimpleX в два раза светлее (мягкий фиолетовый) */
         .simplex-container button,
         .simplex-container a, 
         .simplex-container [data-simplex-channel-preview] button,
@@ -95,7 +94,6 @@
             border-color: #555;
         }
 
-        /* Неоновый спойлер "Безудержное счастье" */
         .neon-spoiler {
             border: 1px solid #8B5CF6;
             box-shadow: 0 0 12px rgba(139, 92, 246, 0.4), 0 0 20px rgba(255, 255, 255, 0.2);
@@ -677,7 +675,6 @@
             { id: 9, title: "Вселенский масштаб", desc: "Откройте «Мультивселенную» или «🌌 Космос»." },
             { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." },
             
-            /* Новые дьявольские ачивки */
             { id: 11, title: "Первый Круг", desc: "Откройте свои первые 10 элементов на уровне «Дьявол» в строгой последовательности, без единой ошибки и подсказок." },
             { id: 12, title: "Искупление", desc: "Накопите 8 ошибок на уровне «Дьявол», а затем совершите 15 успешных слияний подряд без единой ошибки." },
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Конец Времен ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
@@ -739,7 +736,6 @@
             if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
             if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
             
-            // Новые дьявольские ачивки:
             if (currentDiff === 'devil' && devilChainStep >= 10) unlockAchievement(11);
             if (currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15) unlockAchievement(12);
             if (currentDiff === 'devil' && openedElements.includes("✝️ Конец Времен ✝️") && errorPenaltySum === 100) unlockAchievement(13);
@@ -878,11 +874,13 @@
             updateUI();
         }
 
+        // ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОДСКАЗОК
         function getHint() {
             const msg = document.getElementById('gameMsg');
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
+            // Собираем ВСЕ доступные комбинации, которые еще не открыты
             for (const [recipeKey, res] of Object.entries(activeRecs)) {
                 const [el1, el2] = recipeKey.split('+');
 
@@ -892,6 +890,7 @@
             }
 
             if (possibleHints.length > 0) {
+                // Выбираем случайный элемент из массива возможных подсказок
                 const found = possibleHints[Math.floor(Math.random() * possibleHints.length)];
                 
                 if (hintsUsed === 0) {
