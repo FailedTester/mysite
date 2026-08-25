@@ -229,9 +229,9 @@
 
     <div class="game-card">
         <div class="diff-selector">
-            <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
-            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
+            <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
+            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~200)</button>
         </div>
 
         <div class="score-board">
@@ -245,7 +245,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 55</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / ~55</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -488,7 +488,8 @@
         }
 
         function updateUI() {
-            document.getElementById('progress').textContent = `${openedElements.length} / ${limits[currentDiff]}`;
+            const currentLimit = limits[currentDiff];
+            document.getElementById('progress').textContent = `${openedElements.length} / ~${currentLimit}`;
             document.getElementById('currentScore').textContent = score;
             document.getElementById('hintsUsed').textContent = hintsUsed;
 
@@ -568,10 +569,7 @@
                 const [el1, el2] = recipeKey.split('+');
 
                 if (openedElements.includes(el1) && openedElements.includes(el2) && !openedElements.includes(res)) {
-                    const currentLimit = limits[currentDiff];
-                    if (openedElements.length < currentLimit) {
-                        possibleHints.push({ el1, el2, res });
-                    }
+                    possibleHints.push({ el1, el2, res });
                 }
             }
 
