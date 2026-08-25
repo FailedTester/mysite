@@ -379,6 +379,61 @@
         <div class="elements-grid" id="elementsGrid"></div>
     </div>
 
+    <!-- Скрипт переопределения кнопки SimpleX Chat -->
+    <script>
+        function applySimplexStyles() {
+            const container = document.querySelector('.simplex-container');
+            if (!container) return;
+
+            // Ищем элементы внутри container, в том числе за Shadow DOM
+            const allElements = container.querySelectorAll('*');
+            allElements.forEach(el => {
+                if (el.shadowRoot) {
+                    if (!el.shadowRoot.querySelector('#simplex-custom-btn-style')) {
+                        const styleNode = document.createElement('style');
+                        styleNode.id = 'simplex-custom-btn-style';
+                        styleNode.textContent = `
+                            /* Принудительная стилизация кнопки */
+                            a[href*="simplex.chat"], 
+                            button, 
+                            .simplex-btn,
+                            [class*="button"] {
+                                background-color: #2d1b4e !important;
+                                background: #2d1b4e !important;
+                                color: #ffd700 !important;
+                                border: 1px solid #ffd700 !important;
+                                font-weight: bold !important;
+                                text-shadow: none !important;
+                                transition: all 0.3s ease !important;
+                            }
+                            a[href*="simplex.chat"]:hover, 
+                            button:hover,
+                            [class*="button"]:hover {
+                                background-color: #3d256a !important;
+                                background: #3d256a !important;
+                                box-shadow: 0 0 12px rgba(255, 215, 0, 0.5) !important;
+                            }
+                            /* Иконки внутри кнопки (если есть) */
+                            svg, path {
+                                fill: #ffd700 !important;
+                                stroke: #ffd700 !important;
+                            }
+                        `;
+                        el.shadowRoot.appendChild(styleNode);
+                    }
+                }
+            });
+        }
+
+        // Наблюдатель за изменениями DOM для мгновенной реакции на загрузку скрипта SimpleX
+        const simplexObserver = new MutationObserver(() => {
+            applySimplexStyles();
+        });
+
+        simplexObserver.observe(document.body, { childList: true, subtree: true });
+        setInterval(applySimplexStyles, 300);
+    </script>
+
     <script>
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
