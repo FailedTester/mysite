@@ -10,10 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
+        
+        /* Принудительно разрешаем прокрутку страницы, чтобы внешние скрипты её не блокировали */
+        html, body {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+        }
+
         body {
             background-color: #000; color: #fff; font-family: 'Playfair Display', serif;
             margin: 0; padding: 15px; display: flex; flex-direction: column;
-            align-items: center; min-height: 100vh; position: relative; overflow-x: hidden;
+            align-items: center; min-height: 100vh; position: relative;
             touch-action: manipulation;
         }
         
@@ -305,7 +313,6 @@
         </details>
     </div>
 
-    <!-- Расширенный неоновый спойлер "Безудержное счастье" -->
     <div class="spoiler-wrapper">
         <details class="custom-spoiler neon-spoiler">
             <summary><span class="gothic-title">Безудержное счастье</span></summary>
@@ -436,7 +443,7 @@
             "🚢 Мегаполис+🌐 Интернет": "📡 Глобальная Сеть", "📡 Глобальная Сеть+🧠 Мудрость": "💡 Ноосфера",
             "💡 Ноосфера+✨ Добро": "🌟 Всеобщее Благо", "🌟 Всеобщее Благо+✝️ Слова Добра ✝️": "🕊️ Благоденствие",
             "🎵 Музыка+❤️ Душа": "✨ Вдохновение", "✨ Вдохновение+🎨 Картина": "🖼️ Шедевр",
-            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 Ученый",
+            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 У ученый",
             "🧑‍🎓 Ученый+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
             "🌐 Сингулярность+✨ Гармония": "🌌 Квантовый Разум", "🌌 Квантовый Разум+❤️ Душа": "✨ Пробуждение",
 
