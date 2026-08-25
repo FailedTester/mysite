@@ -97,17 +97,17 @@
 
         /* Неоновый спойлер "Безудержное счастье" */
         .neon-spoiler {
-            border: 1px solid #a855f7;
-            box-shadow: 0 0 12px rgba(168, 85, 247, 0.4), 0 0 20px rgba(255, 255, 255, 0.2);
+            border: 1px solid #8B5CF6;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4), 0 0 20px rgba(255, 255, 255, 0.2);
         }
         .neon-spoiler summary .gothic-title {
             font-size: 24px !important;
             color: #ffffff;
-            text-shadow: 0 0 5px #ffffff, 0 0 10px #a855f7, 0 0 18px #a855f7;
+            text-shadow: 0 0 5px #ffffff, 0 0 10px #8B5CF6, 0 0 18px #8B5CF6;
         }
         .neon-spoiler .spoiler-content {
             padding: 0 !important;
-            border-top: 1px solid rgba(168, 85, 247, 0.3);
+            border-top: 1px solid rgba(139, 92, 246, 0.3);
             margin-top: 0;
         }
 
@@ -176,9 +176,9 @@
         }
 
         .spoiler-content a {
-            color: #ffd700;
+            color: #8B5CF6;
             text-decoration: none;
-            border-bottom: 1px dotted #ffd700;
+            border-bottom: 1px dotted #8B5CF6;
             transition: color 0.2s;
         }
         .spoiler-content a:hover {
@@ -291,7 +291,7 @@
 
     <div id="achModal">
         <div class="modal-content">
-            <h3>🏆 Достижения (<span id="achCount">0</span>/10)</h3>
+            <h3>🏆 Достижения (<span id="achCount">0</span>/13)</h3>
             <div id="achListContainer"></div>
             <button class="close-modal" onclick="toggleAchModal(false)">Закрыть</button>
         </div>
@@ -675,7 +675,12 @@
             { id: 7, title: "Гармония мира", desc: "Откройте элемент «🕊️ Мир» или «✨ Гармония»." },
             { id: 8, title: "Упорство", desc: "Потратьте в сумме >1000 очков на штрафы за ошибки, преодолев рубеж в 75 элементов." },
             { id: 9, title: "Вселенский масштаб", desc: "Откройте «Мультивселенную» или «🌌 Космос»." },
-            { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." }
+            { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." },
+            
+            /* Новые дьявольские ачивки */
+            { id: 11, title: "Первый Круг", desc: "Откройте свои первые 10 элементов на уровне «Дьявол» в строгой последовательности, без единой ошибки и подсказок." },
+            { id: 12, title: "Искупление", desc: "Накопите 8 ошибок на уровне «Дьявол», а затем совершите 15 успешных слияний подряд без единой ошибки." },
+            { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Конец Времен ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
         const limits = { human: 55, mage: 110, god: 200, devil: 200 };
@@ -684,6 +689,8 @@
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
         let errorPenaltySum = 0;
         let selfCombineCount = 0;
+        let devilSuccessStreak = 0;
+        let devilChainStep = 0;
 
         const getActiveRecipes = () => {
             return currentDiff === 'devil' ? devilRecipes : fullRecipes;
@@ -731,6 +738,11 @@
             if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
             if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
             if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
+            
+            // Новые дьявольские ачивки:
+            if (currentDiff === 'devil' && devilChainStep >= 10) unlockAchievement(11);
+            if (currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15) unlockAchievement(12);
+            if (currentDiff === 'devil' && openedElements.includes("✝️ Конец Времен ✝️") && errorPenaltySum === 100) unlockAchievement(13);
         }
 
         function loadState() {
@@ -740,6 +752,8 @@
             hintsUsed = parseInt(localStorage.getItem(`alchemy_hints_${currentDiff}`)) || 0;
             errorPenaltySum = parseInt(localStorage.getItem(`alchemy_errors_${currentDiff}`)) || 0;
             selfCombineCount = parseInt(localStorage.getItem(`alchemy_self_${currentDiff}`)) || 0;
+            devilSuccessStreak = parseInt(localStorage.getItem(`alchemy_devil_streak_${currentDiff}`)) || 0;
+            devilChainStep = parseInt(localStorage.getItem(`alchemy_devil_chain_${currentDiff}`)) || 0;
             updateUI();
         }
 
@@ -749,6 +763,8 @@
             localStorage.setItem(`alchemy_hints_${currentDiff}`, hintsUsed);
             localStorage.setItem(`alchemy_errors_${currentDiff}`, errorPenaltySum);
             localStorage.setItem(`alchemy_self_${currentDiff}`, selfCombineCount);
+            localStorage.setItem(`alchemy_devil_streak_${currentDiff}`, devilSuccessStreak);
+            localStorage.setItem(`alchemy_devil_chain_${currentDiff}`, devilChainStep);
 
             let fixedBest = parseInt(localStorage.getItem(`alchemy_best_fixed_${currentDiff}`)) || 0;
             if (hintsUsed === 0) {
@@ -827,9 +843,18 @@
                     selfCombineCount++;
                 }
 
+                if (currentDiff === 'devil') {
+                    devilSuccessStreak++;
+                }
+
                 if (!openedElements.includes(result)) {
                     openedElements.push(result);
                     score += 100;
+                    
+                    if (currentDiff === 'devil' && hintsUsed === 0) {
+                        devilChainStep++;
+                    }
+
                     msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
                     msg.textContent = `✨ Новый элемент: ${result}! (+100 очков)`;
                 } else {
@@ -839,6 +864,12 @@
             } else {
                 score = Math.max(0, score - 5);
                 errorPenaltySum += 5;
+                
+                if (currentDiff === 'devil') {
+                    devilSuccessStreak = 0;
+                    devilChainStep = 0;
+                }
+
                 msg.style.color = '#b22222';
                 msg.textContent = '❌ Элементы не соединяются (-5 очков)';
             }
@@ -872,6 +903,11 @@
 
                 score = score >= 200 ? score - 200 : 0;
                 hintsUsed++;
+                
+                if (currentDiff === 'devil') {
+                    devilChainStep = 0;
+                }
+
                 saveState();
                 slot1 = found.el1; slot2 = found.el2;
                 msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
@@ -886,7 +922,7 @@
         function resetAlchemy() {
             if (confirm(`Сбросить прогресс для уровня "${currentDiff.toUpperCase()}"?`)) {
                 openedElements = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
-                score = hintsUsed = errorPenaltySum = selfCombineCount = 0;
+                score = hintsUsed = errorPenaltySum = selfCombineCount = devilSuccessStreak = devilChainStep = 0;
                 slot1 = slot2 = null;
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
