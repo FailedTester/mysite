@@ -45,6 +45,12 @@
             100% { color: #ff4500; text-shadow: 0 0 8px #ff0000, 0 0 20px #ff8c00; }
         }
 
+        @keyframes devilFireGlow {
+            0% { color: #ff0000; text-shadow: 0 0 10px #8b0000, 0 0 20px #ff4500; }
+            50% { color: #ff4500; text-shadow: 0 0 15px #ff0000, 0 0 30px #8b0000; }
+            100% { color: #ff0000; text-shadow: 0 0 10px #8b0000, 0 0 20px #ff4500; }
+        }
+
         .burning-title {
             font-family: 'Playfair Display', serif;
             font-size: clamp(18px, 4vw, 22px);
@@ -154,12 +160,19 @@
             border-bottom-color: #fff;
         }
 
-        .diff-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+        .diff-selector { display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
         .diff-btn {
             background: #151515; color: #888; border: 1px solid #333;
-            padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s;
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;
         }
         .diff-btn.active { background: #2a2200; border-color: #ffd700; color: #ffd700; font-weight: bold; }
+        .diff-btn.devil-btn.active { 
+            background: #2a0000; 
+            border-color: #ff0000; 
+            animation: devilFireGlow 2s infinite ease-in-out; 
+            font-weight: bold; 
+        }
+
         .score-board {
             display: flex; justify-content: space-between; font-size: 12px; color: #bbb;
             background: rgba(0, 0, 0, 0.4); padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; align-items: center;
@@ -198,8 +211,14 @@
             background: #181818; color: #ccc; border: 1px solid #333; border-radius: 6px;
             padding: 6px 10px; font-size: 12px; cursor: pointer; user-select: none; transition: 0.15s;
         }
+        .element-btn.devil-glow {
+            border-color: #ff3300;
+            animation: devilFireGlow 3s infinite ease-in-out;
+            color: #ff9999;
+        }
         .element-btn:active { transform: scale(0.95); }
         .element-btn.selected { background: #332a00; border-color: #ffd700; color: #ffd700; }
+        .element-btn.devil-glow.selected { background: #400000; border-color: #ff0000; color: #ff4500; }
 
         #achModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -278,8 +297,8 @@
             <summary><span class="gothic-title">Об игре</span></summary>
             <div class="spoiler-content">
                 <p>Хотите узнать рецепт души, любви или Вселенной? Всё начинается с простоты... Именно о ней повествует игра. У нее нет названия. Вы просто получаете начальные элементы и соединяете два из них. Если они сочетаются, открывается новый элемент, который вы также можете соединить с чем-нибудь, усложняя структуру материи раз за разом.</p>
-                <p>В игре есть три уровня: человек, маг, Бог.</p>
-                <p>Разумеется, что человеку не подвластно все и он создаст примерно полсотни элементов. Маг же обладает сверхспособностями и вы можете сотворить гораздо больше стихий. Но если вы решите властвовать над миром - переходите к уровню Бог. Здесь вы сможете сотворить примерно пару сотен элементов, соединяя подходящие пары, узнаете рецепты чувств и иных тонких материй.</p>
+                <p>В игре есть четыре уровня: человек, маг, Бог и разрушительный Дьявол.</p>
+                <p>Разумеется, что человеку не подвластно все и он создаст примерно полсотни элементов. Маг же обладает сверхспособностями и вы можете сотворить гораздо больше стихий. Но если вы решите властвовать над миром - переходите к уровню Бог. А для познания энтропии и хаоса создан зловещий уровень Дьявол с беспрецедентными разрушительными рецептами.</p>
                 <p>Также есть система достижений. В разделе "Награды" о них написано подробнее.</p>
                 <p>Подсказка стоит 200 баллов, но если у вас не хватает очков, то она заберёт все оставшиеся. Рекорд вы можете обновить до использования первой подсказки, после ее задействования он увеличиваться не будет.</p>
                 <p>Играйте в свое удовольствие, путешествуя от простого к сложному, познавая структуру мира. Все данные о ваших успехах не попадают в сеть - они хранятся в браузере. Никто не узнает о вас пока вы не решите заскринить свой прогресс и отправить другу.</p>
@@ -294,6 +313,7 @@
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
             <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~200)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~180)</button>
         </div>
 
         <div class="score-board">
@@ -323,6 +343,7 @@
 
     <script>
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
+        const devilInitialElements = ["🔥 Адское Пламя", "🕳️ Первичная Пустота", "☠️ Яд", "⚡ Хаос"];
         
         const fullRecipes = {
             "💧 Вода+🔥 Огонь": "💨 Пар", "🔥 Огонь+🌱 Земля": "🌋 Лава",
@@ -442,6 +463,106 @@
             "🌱 Блаженный Мир+🎉 Счастье": "💫 Нирвана", "💫 Нирвана+Бессмертие": "🕊️ Вечный Покой"
         };
 
+        const devilRecipes = {
+            "🔥 Адское Пламя+🕳️ Первичная Пустота": "🌑 Сингулярный Пепел",
+            "☠️ Яд+⚡ Хаос": "☣️ Токсичный Шторм",
+            "🔥 Адское Пламя+☠️ Яд": "🧪 Кипящая Кислота",
+            "🕳️ Первичная Пустота+⚡ Хаос": "🌀 Пространственный Разрыв",
+            "🌑 Сингулярный Пепел+☣️ Токсичный Шторм": "🥀 Гниющий Распад",
+            "🧪 Кипящая Кислота+🌀 Пространственный Разрыв": "💥 Энергетический Шрам",
+            "🔥 Адское Пламя+🔥 Адское Пламя": "🔥 Инфернальный Смерч",
+            "🕳️ Первичная Пустота+🕳️ Первичная Пустота": "🕳️ Бездна",
+            "☠️ Яд+☠️ Яд": "💀 Некроз",
+            "⚡ Хаос+⚡ Хаос": "⚡ Анархия",
+            "🔥 Инфернальный Смерч+🕳️ Бездна": "☄️ Метеоритный Дождь",
+            "💀 Некроз+⚡ Анархия": "🧟 Чума Хаоса",
+            "💥 Энергетический Шрам+🥀 Гниющий Распад": "🪓 Энтропия",
+            "☄️ Метеоритный Дождь+🧟 Чума Хаоса": "🌋 Магматический Катаклизм",
+            "🪓 Энтропия+🌀 Пространственный Разрыв": "⛓️ Разрушение Цепей",
+            "🌋 Магматический Катаклизм+⛓️ Разрушение Цепей": "🦹 Тёмный Владыка",
+            "🦹 Тёмный Владыка+⚡ Хаос": "👺 Архидемон",
+            "👺 Архидемон+🕳️ Бездна": "🌑 Чёрная Звезда",
+            "🌑 Чёрная Звезда+🔥 Инфернальный Смерч": "💥 Сверхновая Смерти",
+            "💥 Сверхновая Смерти+🧟 Чума Хаоса": "🦴 Разложение Материи",
+            "🦴 Разложение Материи+🪓 Энтропия": "🕳️ Квантовый Коллапс",
+            "🕳️ Квантовый Коллапс+🌀 Пространственный Разрыв": "🌐 Распад Реальности",
+            "🌐 Распад Реальности+🌑 Чёрная Звезда": "🕳️ Сверхдыра Хаоса",
+            "🔥 Адское Пламя+⚡ Хаос": "🌋 Огненная Буря",
+            "🕳️ Первичная Пустота+☠️ Яд": "🪦 Могильный Холод",
+            "🌋 Огненная Буря+🪦 Могильный Холод": "🧊 Кровавый Град",
+            "🧊 Кровавый Град+🧪 Кипящая Кислота": "⚗️ Алхимический Яд",
+            "⚗️ Алхимический Яд+☣️ Токсичный Шторм": "🌪️ Кислотный Торнадо",
+            "🌪️ Кислотный Торнадо+💥 Энергетический Шрам": "⚡ Плазменный Шторм",
+            "⚡ Плазменный Шторм+🥀 Гниющий Распад": "🦠 Мутагенный Распад",
+            "🦠 Мутагенный Распад+🧟 Чума Хаоса": "🦇 Легион Теней",
+            "🦇 Легион Теней+👺 Архидемон": "👑 Князь Тьмы",
+            "👑 Князь Тьмы+🌐 Распад Реальности": "🌌 Абсолютный Хаос",
+            "🌌 Абсолютный Хаос+🕳️ Сверхдыра Хаоса": "🌀 Первозданная Тьма",
+            "🔥 Адское Пламя+⚡ Энергия": "🔥 Плазменный Вихрь",
+            "🕳️ Первичная Пустота+🪨 Камень": "🕳️ Тёмный Монолит",
+            "☠️ Яд+💧 Вода": "🧪 Сточные Воды",
+            "🧪 Сточные Воды+🌾 Болото": "🦠 Токсичная Топь",
+            "🦠 Токсичная Топь+🦇 Легион Теней": "🕷️ Паутина Ужаса",
+            "🕷️ Паутина Ужаса+☠️ Яд": "🦂 Скорпион Бездны",
+            "🦂 Скорпион Бездны+👺 Архидемон": "🐉 Дракон Бездны",
+            "🐉 Дракон Бездны+💥 Сверхновая Смерти": "☄️ Комета Разрушения",
+            "☄️ Комета Разрушения+🌌 Абсолютный Хаос": "🌠 Метеоритный Шторм",
+            "🌠 Метеоритный Шторм+🕳️ Сверхдыра Хаоса": "🪐 Разорванная Планета",
+            "🪐 Разорванная Планета+🌐 Распад Реальности": "💥 Взрыв Галактики",
+            "💥 Взрыв Галактики+🌀 Первозданная Тьма": "🕳️ Тёмная Мультивселенная",
+            "🔥 Адское Пламя+🧊 Кровавый Град": "⚡ Электрический Шок",
+            "⚡ Электрический Шок+⚡ Анархия": "⚡ Всплеск Энтропии",
+            "⚡ Всплеск Энтропии+🪓 Энтропия": "🪚 Распил Пространства",
+            "🪚 Распил Пространства+⛓️ Разрушение Цепей": "🔗 Разрыв Времени",
+            "🔗 Разрыв Времени+🌀 Пространственный Разрыв": "⏳ Темпоральный Коллапс",
+            "⏳ Темпоральный Коллапс+🌌 Абсолютный Хаос": "🕰️ Конец Времени",
+            "🕰️ Конец Времени+🌀 Первозданная Тьма": "🌌 Великое Ничто",
+            "🕳️ Первичная Пустота+🔥 Адское Пламя": "🌋 Инфернальный Разлом",
+            "🌋 Инфернальный Разлом+☠️ Яд": "🧪 Кипящий Яд",
+            "🧪 Кипящий Яд+⚡ Хаос": "💥 Хаотический Взрыв",
+            "💥 Хаотический Взрыв+🌑 Сингулярный Пепел": "🌋 Вулкан Пепла",
+            "🌋 Вулкан Пепла+☣️ Токсичный Шторм": "🌪️ Токсичный Пепел",
+            "🌪️ Токсичный Пепел+🥀 Гниющий Распад": "🍂 Мертвый Лес",
+            "🍂 Мертвый Лес+🧟 Чума Хаоса": "🧟 Зомби-Апокалипсис",
+            "🧟 Зомби-Апокалипсис+👑 Князь Тьмы": "👑 Повелитель Нежити",
+            "👑 Повелитель Нежити+🕳️ Сверхдыра Хаоса": "💀 Властелин Энтропии",
+            "💀 Властелин Энтропии+🌌 Великое Ничто": "👁️ Око Хаоса",
+            "👁️ Око Хаоса+🌐 Распад Реальности": "⚡ Первородный Грех",
+            "⚡ Первородный Грех+🌌 Абсолютный Хаос": "🌑 Тёмная Энергия",
+            "🌑 Тёмная Энергия+🕳️ Первичная Пустота": "🕳️ Чёрная Масса",
+            "🕳️ Чёрная Масса+🔥 Адское Пламя": "🔥 Багровое Пекло",
+            "🔥 Багровое Пекло+☠️ Яд": "🐍 Змеиный Яд",
+            "🐍 Змеиный Яд+⚡ Хаос": "⚡ Дикий Разряд",
+            "⚡ Дикий Разряд+🌀 Пространственный Разрыв": "🌀 Вихрь Хаоса",
+            "🌀 Вихрь Хаоса+🦇 Легион Теней": "🦇 Тень Ужаса",
+            "🦇 Тень Ужаса+🐉 Дракон Бездны": "🐉 Дракон Хаоса",
+            "🐉 Дракон Хаоса+🪐 Разорванная Планета": "☄️ Звездный Катаклизм",
+            "☄️ Звездный Катаклизм+💥 Взрыв Галактики": "💥 Космический Шторм",
+            "💥 Космический Шторм+⏳ Темпоральный Коллапс": "⏳ Хроно-Разрушение",
+            "⏳ Хроно-Разрушение+🕰️ Конец Времени": "🌌 Космический Распад",
+            "🌌 Космический Распад+🕳️ Тёмная Мультивселенная": "🕳️ Абсолютная Пустота",
+            "🔥 Адское Пламя+🧟 Чума Хаоса": "🔥 Огненная Чума",
+            "🔥 Огненная Чума+🪓 Энтропия": "🪓 Пламенный Разрушитель",
+            "🪓 Пламенный Разрушитель+👺 Архидемон": "👹 Дьявольский Гнев",
+            "👹 Дьявольский Гнев+🌑 Чёрная Звезда": "🌑 Звездный Распад",
+            "🌑 Звездный Распад+🕳️ Квантовый Коллапс": "🌀 Квантовая Тьма",
+            "🌀 Квантовая Тьма+🌐 Распад Реальности": "🌐 Разрушитель Миров",
+            "🌐 Разрушитель Миров+🌌 Великое Ничто": "👁️ Око Бездны",
+            "👁️ Око Бездны+👁️ Око Хаоса": "👑 Тёмный Престол",
+            "👑 Тёмный Престол+🌑 Тёмная Энергия": "⚡ Тёмный Импульс",
+            "⚡ Тёмный Импульс+🕳️ Чёрная Масса": "🕳️ Первобытная Сингулярность",
+            "🕳️ Первобытная Сингулярность+🔥 Багровое Пекло": "🔥 Плазменный Ад",
+            "🔥 Плазменный Ад+🐍 Змеиный Яд": "🐍 Токсичный Пламень",
+            "🐍 Токсичный Пламень+⚡ Дикий Разряд": "⚡ Хаотический Разряд",
+            "⚡ Хаотический Разряд+🦇 Тень Ужаса": "🦇 Тёмный Фантом",
+            "🦇 Тёмный Фантом+🐉 Дракон Хаоса": "🐉 Владыка Бездны",
+            "🐉 Владыка Бездны+☄️ Звездный Катаклизм": "🪐 Мертвая Планета",
+            "🪐 Мертвая Планета+💥 Космический Шторм": "💥 Звездный Коллапс",
+            "💥 Звездный Коллапс+⏳ Хроно-Разрушение": "⏳ Разлом Времени",
+            "⏳ Разлом Времени+🌌 Космический Распад": "🌌 Межпространственный Хаос",
+            "🌌 Межпространственный Хаос+🕳️ Абсолютная Пустота": "🕳️ Конечный Распад"
+        };
+
         const achievementsList = [
             { id: 1, title: "Искра творения", desc: "Соедините первые два элемента и получите новый." },
             { id: 2, title: "Исследователь стихий", desc: "Откройте 30 уникальных элементов в игре." },
@@ -455,7 +576,7 @@
             { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." }
         ];
 
-        const limits = { human: 55, mage: 110, god: 200 };
+        const limits = { human: 55, mage: 110, god: 200, devil: 180 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -463,7 +584,7 @@
         let selfCombineCount = 0;
 
         const getActiveRecipes = () => {
-            return fullRecipes;
+            return currentDiff === 'devil' ? devilRecipes : fullRecipes;
         };
 
         function unlockAchievement(id) {
@@ -511,7 +632,8 @@
         }
 
         function loadState() {
-            openedElements = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || [...initialElements];
+            const defaultInit = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
+            openedElements = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || defaultInit;
             score = parseInt(localStorage.getItem(`alchemy_score_${currentDiff}`)) || 0;
             hintsUsed = parseInt(localStorage.getItem(`alchemy_hints_${currentDiff}`)) || 0;
             errorPenaltySum = parseInt(localStorage.getItem(`alchemy_errors_${currentDiff}`)) || 0;
@@ -563,7 +685,7 @@
             let displayRecord = hintsUsed > 0 ? fixedBest : currentLiveHigh;
 
             highScoreEl.style.fontSize = "12px";
-            highScoreEl.style.color = "#ffd700";
+            highScoreEl.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
             highScoreEl.textContent = displayRecord;
 
             const s1 = document.getElementById('slot1'), s2 = document.getElementById('slot2');
@@ -574,7 +696,11 @@
             grid.innerHTML = '';
             openedElements.forEach(el => {
                 const btn = document.createElement('div');
-                btn.className = 'element-btn' + (el === slot1 || el === slot2 ? ' selected' : '');
+                let btnClass = 'element-btn';
+                if (currentDiff === 'devil') btnClass += ' devil-glow';
+                if (el === slot1 || el === slot2) btnClass += ' selected';
+                
+                btn.className = btnClass;
                 btn.textContent = el;
                 btn.onclick = () => selectElement(el);
                 grid.appendChild(btn);
@@ -602,7 +728,7 @@
                 if (!openedElements.includes(result)) {
                     openedElements.push(result);
                     score += 100;
-                    msg.style.color = '#ffd700';
+                    msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
                     msg.textContent = `✨ Новый элемент: ${result}! (+100 очков)`;
                 } else {
                     msg.style.color = '#aaa';
@@ -622,8 +748,9 @@
         function getHint() {
             const msg = document.getElementById('gameMsg');
             let possibleHints = [];
+            const activeRecs = getActiveRecipes();
 
-            for (const [recipeKey, res] of Object.entries(fullRecipes)) {
+            for (const [recipeKey, res] of Object.entries(activeRecs)) {
                 const [el1, el2] = recipeKey.split('+');
 
                 if (openedElements.includes(el1) && openedElements.includes(el2) && !openedElements.includes(res)) {
@@ -645,7 +772,7 @@
                 hintsUsed++;
                 saveState();
                 slot1 = found.el1; slot2 = found.el2;
-                msg.style.color = '#ffd700';
+                msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
                 msg.textContent = `💡 Подсказка: соедините ${found.el1} и ${found.el2}!`;
                 updateUI();
             } else {
@@ -656,7 +783,7 @@
 
         function resetAlchemy() {
             if (confirm(`Сбросить прогресс для уровня "${currentDiff.toUpperCase()}"?`)) {
-                openedElements = [...initialElements];
+                openedElements = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
                 score = hintsUsed = errorPenaltySum = selfCombineCount = 0;
                 slot1 = slot2 = null;
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
