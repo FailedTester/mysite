@@ -665,6 +665,7 @@
             "🌑 Вечная Ночь+🕳️ Первичная Тьма": "🕳️ Тёмный Предел",
             "🕳️ Тёмный Предел+🌌 Уничтожение Бытия": "✝️ Конец Времен ✝️",
 
+            /* Дополнительные связки-мосты для предотвращения затыка на 126 элементах */
             "🦇 Царство Теней+👻 Ужас": "🦇 Легион Теней",
             "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Тёмная Сущность",
             "🌑 Тёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
@@ -708,6 +709,7 @@
             { id: 8, title: "Упорство", desc: "Потратьте в сумме >1000 очков на штрафы за ошибки, преодолев рубеж в 75 элементов." },
             { id: 9, title: "Вселенский масштаб", desc: "Откройте «Мультивселенную» или «🌌 Космос»." },
             { id: 10, title: "Слово Добра", desc: "Достигните финала и откройте главный элемент «✝️ Слова Добра ✝️»." },
+            
             { id: 11, title: "Первый Круг", desc: "Откройте свои первые 10 элементов на уровне «Дьявол» в строгой последовательности, без единой ошибки и подсказок." },
             { id: 12, title: "Искупление", desc: "Накопите 8 ошибок на уровне «Дьявол», а затем совершите 15 успешных слияний подряд без единой ошибки." },
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Конец Времен ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
@@ -877,6 +879,14 @@
                 }
 
                 if (!openedElements.includes(result)) {
+                    if (openedElements.length >= limits[currentDiff]) {
+                        msg.style.color = '#ff4500';
+                        msg.textContent = `⚠️ Достигнут лимит элементов (${limits[currentDiff]}) для этого режима!`;
+                        slot1 = slot2 = null;
+                        updateUI();
+                        return;
+                    }
+
                     openedElements.push(result);
                     score += 100;
                     
@@ -909,18 +919,20 @@
 
         function getHint() {
             const msg = document.getElementById('gameMsg');
+
+            if (openedElements.length >= limits[currentDiff]) {
+                msg.style.color = '#ff4500';
+                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан! Перейдите на следующий уровень сложности.`;
+                return;
+            }
+
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
             for (const [recipeKey, res] of Object.entries(activeRecs)) {
-                const parts = recipeKey.split('+');
-                const el1 = parts[0];
-                const el2 = parts[1];
+                const [el1, el2] = recipeKey.split('+');
 
-                // Проверяем наличие элементов в обоих возможных порядках
-                const hasPair = (openedElements.includes(el1) && openedElements.includes(el2));
-
-                if (hasPair && !openedElements.includes(res)) {
+                if (openedElements.includes(el1) && openedElements.includes(el2) && !openedElements.includes(res)) {
                     possibleHints.push({ el1, el2, res });
                 }
             }
