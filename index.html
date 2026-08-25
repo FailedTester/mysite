@@ -50,7 +50,7 @@
 
         .simplex-container {
             width: 100%; max-width: 550px; height: 500px; overflow-y: auto;
-            margin-bottom: 20px; border-radius: 12px; border: 1px solid #333;
+            margin-bottom: 0; border-radius: 12px; border: 1px solid #333;
             background-color: rgba(10, 10, 10, 0.9); backdrop-filter: blur(4px);
         }
         .simplex-container::-webkit-scrollbar { width: 6px; }
@@ -76,11 +76,23 @@
             border-radius: 10px;
             overflow: hidden;
             backdrop-filter: blur(4px);
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .custom-spoiler:hover {
             border-color: #555;
         }
+
+        /* Неоновый спойлер "Безудержное счастье" */
+        .neon-spoiler {
+            border: 1px solid #a855f7;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.4), 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+        .neon-spoiler summary .gothic-title {
+            font-size: 24px !important;
+            color: #ffffff;
+            text-shadow: 0 0 5px #ffffff, 0 0 10px #a855f7, 0 0 18px #a855f7;
+        }
+
         .custom-spoiler summary {
             padding: 12px 15px;
             font-size: 14px;
@@ -292,14 +304,22 @@
         </details>
     </div>
 
-    <div class="simplex-container">
-        <div data-simplex-channel-preview
-          data-channel-link="https://smp10.simplex.im/c#l38CBA0X0PjN7DP2yQ0Knxydds6KIUG37esdSQuKTpc"
-          data-channel-id="ICUfEnNn-7ps7egWEMwi4vZIboaFUHH-4eh1erJ-hqQ="
-          data-relay-domains="relay1.simplex.chat,relay2.simplex.chat"
-          data-app-download-buttons="on"
-          data-color-scheme="dark"
-        ></div>
+    <!-- Обновленный блок Simplex, спрятанный в неоновый спойлер -->
+    <div class="spoiler-wrapper">
+        <details class="custom-spoiler neon-spoiler">
+            <summary><span class="gothic-title">Безудержное счастье</span></summary>
+            <div class="spoiler-content">
+                <div class="simplex-container" style="border: none; margin-bottom: 0;">
+                    <div data-simplex-channel-preview
+                      data-channel-link="https://smp10.simplex.im/c#l38CBA0X0PjN7DP2yQ0Knxydds6KIUG37esdSQuKTpc"
+                      data-channel-id="ICUfEnNn-7ps7egWEMwi4vZIboaFUHH-4eh1erJ-hqQ="
+                      data-relay-domains="relay1.simplex.chat,relay2.simplex.chat"
+                      data-app-download-buttons="on"
+                      data-color-scheme="dark"
+                    ></div>
+                </div>
+            </div>
+        </details>
     </div>
 
     <div class="spoiler-wrapper">
