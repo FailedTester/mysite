@@ -810,11 +810,27 @@
         function getDevilRecipes() {
             const entries = Object.entries(devilRecipes);
             const result = {};
-            // Берем первые 196 рецептов (4 начальных + 196 = 200)
-            const limitedEntries = entries.slice(0, 196);
-            for (const [key, value] of limitedEntries) {
-                result[key] = value;
+            const openedSet = new Set(devilInitialElements);
+            let count = 0;
+            let addedInPass = true;
+            
+            // Многопроходный обход: добавляем только те рецепты, у которых оба ингредиента уже есть
+            while (addedInPass && count < 196) {
+                addedInPass = false;
+                for (const [key, value] of entries) {
+                    if (count >= 196) break;
+                    if (result[key]) continue;
+                    
+                    const [el1, el2] = key.split('+');
+                    if (openedSet.has(el1) && openedSet.has(el2) && !openedSet.has(value)) {
+                        openedSet.add(value);
+                        result[key] = value;
+                        count++;
+                        addedInPass = true;
+                    }
+                }
             }
+            
             return result;
         }
 
