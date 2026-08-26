@@ -387,8 +387,7 @@
     </div>
 
     <script>
-        // Версия кэша для сброса старых сохраненных ограничений
-        const GAME_VERSION = 'v2_fix_limits';
+        const GAME_VERSION = 'v3_unlocked_limits';
         if (localStorage.getItem('alchemy_version') !== GAME_VERSION) {
             localStorage.clear();
             localStorage.setItem('alchemy_version', GAME_VERSION);
@@ -608,8 +607,8 @@
             "🥀 Тление+⚰️ Погост": "🪦 Заброшенные Могилы",
             "🪦 Заброшенные Могилы+🏚️ Руины Города": "👻 Призрачный Мир",
             "👻 Призрачный Мир+👻 Ужас": "🦇 Легион Теней",
-            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Тёмная Сущность",
-            "🌑 Тёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
+            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Tёмная Сущность",
+            "🌑 Tёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
             "🌀 Сингулярный Вихрь+🌀 Энтропия Вселенной": "🕳️ Первозданный Хаос",
             "🗡️ Злоба+🗡️ Удар в Спину": "🔪 Коварство",
             "🔪 Коварство+🐍 Вероломство": "🕷️ Паутина Интриг",
@@ -741,7 +740,7 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 110, god: 215, devil: 215 };
+        const limits = { human: 55, mage: 110, god: 220, devil: 220 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -799,7 +798,7 @@
             if (selfCombineCount >= 5) unlockAchievement(6);
             if (openedElements.includes("🕊️ Мир") || openedElements.includes("✨ Гармония")) unlockAchievement(7);
             if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
-            if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
+            if (openedElements.includes("Мультивселенную") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
             if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
             
             if (currentDiff === 'devil' && devilChainStep >= 10) unlockAchievement(11);
@@ -912,14 +911,6 @@
                 }
 
                 if (!openedElements.includes(result)) {
-                    if (openedElements.length >= limits[currentDiff]) {
-                        msg.style.color = '#ff4500';
-                        msg.textContent = `⚠️ Достигнут лимит элементов (${limits[currentDiff]}) для этого режима!`;
-                        slot1 = slot2 = null;
-                        updateUI();
-                        return;
-                    }
-
                     openedElements.push(result);
                     score += 100;
                     
@@ -952,13 +943,6 @@
 
         function getHint() {
             const msg = document.getElementById('gameMsg');
-
-            if (openedElements.length >= limits[currentDiff]) {
-                msg.style.color = '#ff4500';
-                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан! Перейдите на следующий уровень сложности.`;
-                return;
-            }
-
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
