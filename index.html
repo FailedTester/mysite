@@ -390,8 +390,8 @@
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
         
-        // Базовые рецепты (все возможные)
-        const baseRecipes = {
+        // ВСЕ рецепты (полный список)
+        const fullRecipes = {
             "💧 Вода+🔥 Огонь": "💨 Пар", "🔥 Огонь+🌱 Земля": "🌋 Лава",
             "💧 Вода+🌱 Земля": "💩 Грязь", "💨 Воздух+🌱 Земля": "🌪️ Пыль",
             "🔥 Огонь+💨 Воздух": "⚡ Энергия", "💧 Вода+💨 Воздух": "🌧️ Дождь",
@@ -503,10 +503,16 @@
             "⚛️ Первоматерия+✨ Пробуждение": "🌠 Космический Разум", "🌠 Космический Разум+🌐 Сингулярность": "🌐 Гиперсеть",
             "🌐 Гиперсеть+💡 Ноосфера": "📡 Коосфера", "📡 Коосфера+🌟 Всеобщее Благо": "🕊️ Вселенский Мир",
             "🕊️ Вселенский Мир+🌱 Земля": "🌍 Экосфера", "🌍 Экосфера+🌿 Природа": "🌱 Блаженный Мир",
-            "🌱 Блаженный Мир+🎉 Счастье": "💫 Нирвана", "💫 Нирвана+Бессмертие": "🕊️ Вечный Покой"
+            "🌱 Блаженный Мир+🎉 Счастье": "💫 Нирвана", "💫 Нирвана+Бессмертие": "🕊️ Вечный Покой",
+            "🌌 Космос+🌟 Свет": "☄️ Комета", "☄️ Комета+Планета": "🌠 Метеорит",
+            "🌠 Метеорит+🌱 Земля": "💎 Кристалл", "💎 Кристалл+⚡ Энергия": "🔮 Магический Кристалл",
+            "🔮 Магический Кристалл+🧠 Мудрость": "👁️ Око Знания", "👁️ Око Знания+👤 Человек": "🧙‍♂️ Архимаг",
+            "🪨 Камень+🌌 Космос": "🪐 Сатурн",
+            "🧙‍♂️ Архимаг+🪐 Сатурн": "🌌 Астрал", "🌌 Астрал+Дух": "💫 Эфир",
+            "💫 Эфир+⚡ Энергия": "⚡ Чистая Прана", "⚡ Чистая Прана+Творец": "🌟 Первотворец"
         };
 
-        // Дьявольские рецепты (отдельно)
+        // Дьявольские рецепты
         const devilRecipes = {
             "🖤 Грех+⚡ Страх": "🏛️ Обитель Зла",
             "🖤 Грех+💀 Смерть": "🥀 Тление",
@@ -714,44 +720,25 @@
             "⚛️ Нулевая Точка+✝️ Абсолютный Конец ✝️": "⬛ Абсолютное Ничто"
         };
 
-        // Функция для ограничения количества элементов в режиме
+        // Функция для получения ограниченного количества рецептов
         function getLimitedRecipes(diff) {
-            const allKeys = Object.keys(baseRecipes);
-            let limit = 0;
-            let targetElement = "";
+            if (diff === 'devil') return devilRecipes;
             
-            if (diff === 'human') {
-                limit = 55;
-                targetElement = "✝️ Слова Добра ✝️";
-            } else if (diff === 'mage') {
-                limit = 110;
-                targetElement = "✨ Пробуждение"; // примерно на 110-м месте
-            } else if (diff === 'god') {
-                limit = 200;
-                targetElement = "🕊️ Вечный Покой"; // примерно на 200-м месте
-            } else {
-                return { ...baseRecipes }; // для дьявола возвращаем все
-            }
-
-            // Собираем элементы по порядку их появления
-            const orderedElements = new Set();
+            const limit = { human: 55, mage: 110, god: 200 }[diff];
             const result = {};
+            const openedSet = new Set(initialElements);
+            const allEntries = Object.entries(fullRecipes);
             
-            // Начинаем с начальных элементов
-            initialElements.forEach(el => orderedElements.add(el));
-            
-            // Проходим по рецептам в порядке их определения
-            for (const [key, value] of Object.entries(baseRecipes)) {
+            // Проходим по рецептам, пока не наберем нужное количество элементов
+            for (const [key, value] of allEntries) {
                 const [el1, el2] = key.split('+');
-                if (orderedElements.has(el1) && orderedElements.has(el2)) {
-                    orderedElements.add(value);
+                if (openedSet.has(el1) && openedSet.has(el2) && !openedSet.has(value)) {
+                    openedSet.add(value);
                     result[key] = value;
-                    if (value === targetElement || orderedElements.size >= limit) {
-                        break;
-                    }
+                    if (openedSet.size >= limit) break;
                 }
             }
-
+            
             return result;
         }
 
@@ -785,12 +772,15 @@
         let devilSuccessStreak = 0;
         let devilChainStep = 0;
 
-        const getActiveRecipes = () => {
-            if (currentDiff === 'devil') {
-                return devilRecipes;
+        // Кэш для рецептов каждого режима
+        const recipeCache = {};
+
+        function getActiveRecipes() {
+            if (!recipeCache[currentDiff]) {
+                recipeCache[currentDiff] = getLimitedRecipes(currentDiff);
             }
-            return getLimitedRecipes(currentDiff);
-        };
+            return recipeCache[currentDiff];
+        }
 
         function findRecipe(el1, el2, recs) {
             if (!el1 || !el2) return null;
@@ -855,6 +845,8 @@
             selfCombineCount = parseInt(localStorage.getItem(`alchemy_self_${currentDiff}`)) || 0;
             devilSuccessStreak = parseInt(localStorage.getItem(`alchemy_devil_streak_${currentDiff}`)) || 0;
             devilChainStep = parseInt(localStorage.getItem(`alchemy_devil_chain_${currentDiff}`)) || 0;
+            // Очищаем кэш при загрузке
+            delete recipeCache[currentDiff];
             updateUI();
         }
 
@@ -883,12 +875,14 @@
             slot1 = slot2 = null;
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === diff));
             document.getElementById('gameMsg').textContent = "Выберите два элемента для соединения";
+            // Очищаем кэш при смене режима
+            delete recipeCache[currentDiff];
             loadState();
         }
 
         function updateUI() {
             const currentLimit = limits[currentDiff];
-            document.getElementById('progress').textContent = `${openedElements.length} / ~${currentLimit}`;
+            document.getElementById('progress').textContent = `${openedElements.length} / ${currentLimit}`;
             document.getElementById('currentScore').textContent = score;
             document.getElementById('hintsUsed').textContent = hintsUsed;
 
@@ -1065,6 +1059,8 @@
                 slot1 = slot2 = null;
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
+                // Очищаем кэш при сбросе
+                delete recipeCache[currentDiff];
                 saveState();
                 document.getElementById('gameMsg').textContent = "Прогресс сброшен.";
                 updateUI();
