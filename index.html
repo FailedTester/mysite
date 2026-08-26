@@ -357,8 +357,8 @@
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~200)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~200)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~215)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~215)</button>
         </div>
 
         <div class="score-board">
@@ -387,6 +387,13 @@
     </div>
 
     <script>
+        // Версия кэша для сброса старых сохраненных ограничений
+        const GAME_VERSION = 'v2_fix_limits';
+        if (localStorage.getItem('alchemy_version') !== GAME_VERSION) {
+            localStorage.clear();
+            localStorage.setItem('alchemy_version', GAME_VERSION);
+        }
+
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
         
@@ -451,7 +458,7 @@
             "🚢 Мегаполис+🌐 Интернет": "📡 Глобальная Сеть", "📡 Глобальная Сеть+🧠 Мудрость": "💡 Ноосфера",
             "💡 Ноосфера+✨ Добро": "🌟 Всеобщее Благо", "🌟 Всеобщее Благо+✝️ Слова Добра ✝️": "🕊️ Благоденствие",
             "🎵 Музыка+❤️ Душа": "✨ Вдохновение", "✨ Вдохновение+🎨 Картина": "🖼️ Шедевр",
-            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 У ученый",
+            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 Ученый",
             "🧑‍🎓 Ученый+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
             "🌐 Сингулярность+✨ Гармония": "🌌 Квантовый Разум", "🌌 Квантовый Разум+❤️ Душа": "✨ Пробуждение",
 
@@ -734,7 +741,6 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        // Изменено: лимит увеличен до 215, чтобы полностью вместить все элементы режима Бог
         const limits = { human: 55, mage: 110, god: 215, devil: 215 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
