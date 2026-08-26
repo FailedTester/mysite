@@ -355,10 +355,10 @@
 
     <div class="game-card">
         <div class="diff-selector">
-            <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
-            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (350+)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (350+)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (350+)</button>
+            <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
+            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~250+)</button>
         </div>
 
         <div class="score-board">
@@ -372,7 +372,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 350+</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 55</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -390,7 +390,8 @@
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
         
-        const fullRecipes = {
+        // Базовые рецепты (все возможные)
+        const baseRecipes = {
             "💧 Вода+🔥 Огонь": "💨 Пар", "🔥 Огонь+🌱 Земля": "🌋 Лава",
             "💧 Вода+🌱 Земля": "💩 Грязь", "💨 Воздух+🌱 Земля": "🌪️ Пыль",
             "🔥 Огонь+💨 Воздух": "⚡ Энергия", "💧 Вода+💨 Воздух": "🌧️ Дождь",
@@ -413,13 +414,12 @@
             "👤 Человек+🔥 Огонь": "🍳 Еда", "👤 Человек+🪨 Камень": "🪓 Орудие",
             "👤 Человек+🌳 Дерево": "🏠 Дом", "🏠 Дом+🏠 Дом": "🏘️ Деревня",
             "🏘️ Деревня+🏘️ Деревня": "🏙️ Город", "🧲 Металл+🪓 Орудие": "⚔️ Оружие",
-
             "🧲 Металл+⚡ Электричество": "💻 Компьютер", "🧱 Стекло+⚡ Энергия": "💡 Лампа",
             "🌳 Дерево+🪓 Орудие": "📜 Бумага", "📜 Бумага+👤 Человек": "📖 Книга",
             "🧲 Металл+🔥 Огонь": "🛢️ Котел", "🌾 Болото+🌳 Дерево": "Торф",
             "🌳 Дерево+🧲 Металл": "⛵ Лодка", "⛵ Лодка+🌊 Море": "Корабль",
-            "Корабль+👤 Человек": "Моряк", "🏠 Дом+🎓 Знание": "🏫 Школа",
-            "🧲 Металл+🏠 Дом": "Замок", "Замок+⚔️ Оружие": "Крепость",
+            "Корабль+👤 Человек": "Моряк", "🧲 Металл+🏠 Дом": "Замок",
+            "Замок+⚔️ Оружие": "Крепость",
             "📖 Книга+👤 Человек": "🎓 Знание", "🎓 Знание+👤 Человек": "🧠 Мудрость",
             "📜 Бумага+🎓 Знание": "🗺️ Карта", "💻 Компьютер+⚡ Электричество": "🌐 Интернет",
             "👤 Человек+⚡ Энергия": "🏃 Движение", "👤 Человек+👤 Человек": "🤝 Дружина",
@@ -439,9 +439,8 @@
             "Философия+✨ Добро": "Истина", "Истина+❤️ Душа": "🕊️ Мир",
             "🕊️ Мир+🌱 Земля": "Рай", "✨ Добро+🌌 Космос": "✨ Гармония",
             "⚡ Энергия+☀️ Солнце": "🌟 Свет", "🌟 Свет+💨 Воздух": "☀️ Солнце",
-            
             "👤 Человек+🏛️ Общество": "👑 Король",
-            "👑 Король+🏰 Замок": "🤴 Монарх", "🤴 Монарх+🏛️ Общество": "⚖️ Законы",
+            "👑 Король+Замок": "🤴 Монарх", "🤴 Монарх+🏛️ Общество": "⚖️ Законы",
             "⚖️ Законы+🧠 Мудрость": "📜 Справедливость", "📜 Справедливость+✨ Добро": "🛡️ Защита",
             "🛡️ Защита+👤 Человек": "🛡️ Рыцарь", "🛡️ Рыцарь+⚔️ Оружие": "⚔️ Паладин",
             "🔥 Огонь+Уголь": "🔥 Пламя", "🔥 Пламя+🛢️ Котел": "🧪 Зелье",
@@ -451,10 +450,9 @@
             "🚢 Мегаполис+🌐 Интернет": "📡 Глобальная Сеть", "📡 Глобальная Сеть+🧠 Мудрость": "💡 Ноосфера",
             "💡 Ноосфера+✨ Добро": "🌟 Всеобщее Благо", "🌟 Всеобщее Благо+✝️ Слова Добра ✝️": "🕊️ Благоденствие",
             "🎵 Музыка+❤️ Душа": "✨ Вдохновение", "✨ Вдохновение+🎨 Картина": "🖼️ Шедевр",
-            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 У ученый",
-            "🧑‍🎓 Ученый+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
+            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 Учёный",
+            "🧑‍🎓 Учёный+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
             "🌐 Сингулярность+✨ Гармония": "🌌 Квантовый Разум", "🌌 Квантовый Разум+❤️ Душа": "✨ Пробуждение",
-
             "☀️ Солнце+🪨 Камень": "Планета", "Планета+🌟 Свет": "🌌 Космос",
             "🌊 Море+☀️ Солнце": "Соль", "Гора+🌋 Лава": "Вулкан",
             "💨 Воздух+❄️ Лед": "Снег", "💧 Вода+❄️ Лед": "Айсберг",
@@ -479,7 +477,6 @@
             "🌸 Эдем+👤 Человек": "🎉 Счастье", "🎉 Счастье+✨ Добро": "💖 Милосердие",
             "💖 Милосердие+🧠 Мудрость": "Сострадание", "Сострадание+🌱 Земля": "Спасение",
             "Спасение+Мультивселенная": "🌟 Вселенская Любовь",
-
             "🕳️ Черная Дыра+🌌 Космос": "🌀 Пространственный Разлом", "🌀 Пространственный Разлом+⚡ Энергия": "⏳ Путешествие во Времени",
             "⏳ Путешествие во Времени+Вечность": "🔄 Хроно-Парадокс", "🔄 Хроно-Парадокс+Творец": "🏛️ Зал Памяти Вселенной",
             "Галактика+Галактика": "💫 Скопление Галактик", "💫 Скопление Галактик+Мультивселенная": "🌌 Великий Предел",
@@ -493,7 +490,6 @@
             "🔥 Неопалимая Купина+💧 Святая Вода": "💧 Живая Вода", "💧 Живая Вода+🦠 Жизнь": "✨ Сотворение Души",
             "✨ Сотворение Души+❤️ Душа": "💖 Чистая Любовь", "💖 Чистая Любовь+✨ Добро": "🌟 Абсолютное Добро",
             "🌟 Абсолютное Добро+✝️ Слова Добра ✝️": "⚡ Вечный Свет Добра",
-
             "🌌 Космос+🌟 Свет": "☄️ Комета", "☄️ Комета+Планета": "🌠 Метеорит",
             "🌠 Метеорит+🌱 Земля": "💎 Кристалл", "💎 Кристалл+⚡ Энергия": "🔮 Магический Кристалл",
             "🔮 Магический Кристалл+🧠 Мудрость": "👁️ Око Знания", "👁️ Око Знания+👤 Человек": "🧙‍♂️ Архимаг",
@@ -510,6 +506,7 @@
             "🌱 Блаженный Мир+🎉 Счастье": "💫 Нирвана", "💫 Нирвана+Бессмертие": "🕊️ Вечный Покой"
         };
 
+        // Дьявольские рецепты (отдельно)
         const devilRecipes = {
             "🖤 Грех+⚡ Страх": "🏛️ Обитель Зла",
             "🖤 Грех+💀 Смерть": "🥀 Тление",
@@ -678,7 +675,6 @@
             "🔥 Огненный Катаклизм+🌋 Экологическая Катастрофа": "🌋 Магматический Апокалипсис",
             "🌌 Ледяная Бездна+🌌 Смерть Галактики": "🕳️ Великое Ничто",
             "🕳️ Великое Ничто+✝️ Конец Времен ✝️": "✝️ Абсолютный Конец ✝️",
-
             "🖤 Грех+🍷 Гедонизм": "🥂 Алчность",
             "🥂 Алчность+🏛️ Обитель Зла": "💰 Нажива",
             "💰 Нажива+👑 Тирания": "🏛️ Олигархия",
@@ -718,6 +714,47 @@
             "⚛️ Нулевая Точка+✝️ Абсолютный Конец ✝️": "⬛ Абсолютное Ничто"
         };
 
+        // Функция для ограничения количества элементов в режиме
+        function getLimitedRecipes(diff) {
+            const allKeys = Object.keys(baseRecipes);
+            let limit = 0;
+            let targetElement = "";
+            
+            if (diff === 'human') {
+                limit = 55;
+                targetElement = "✝️ Слова Добра ✝️";
+            } else if (diff === 'mage') {
+                limit = 110;
+                targetElement = "✨ Пробуждение"; // примерно на 110-м месте
+            } else if (diff === 'god') {
+                limit = 200;
+                targetElement = "🕊️ Вечный Покой"; // примерно на 200-м месте
+            } else {
+                return { ...baseRecipes }; // для дьявола возвращаем все
+            }
+
+            // Собираем элементы по порядку их появления
+            const orderedElements = new Set();
+            const result = {};
+            
+            // Начинаем с начальных элементов
+            initialElements.forEach(el => orderedElements.add(el));
+            
+            // Проходим по рецептам в порядке их определения
+            for (const [key, value] of Object.entries(baseRecipes)) {
+                const [el1, el2] = key.split('+');
+                if (orderedElements.has(el1) && orderedElements.has(el2)) {
+                    orderedElements.add(value);
+                    result[key] = value;
+                    if (value === targetElement || orderedElements.size >= limit) {
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         const achievementsList = [
             { id: 1, title: "Искра творения", desc: "Соедините первые два элемента и получите новый." },
             { id: 2, title: "Исследователь стихий", desc: "Откройте 30 уникальных элементов в игре." },
@@ -734,7 +771,12 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 350, god: 350, devil: 350 };
+        const limits = { 
+            human: 55, 
+            mage: 110, 
+            god: 200, 
+            devil: Object.keys(devilRecipes).length + 4 
+        };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -744,7 +786,10 @@
         let devilChainStep = 0;
 
         const getActiveRecipes = () => {
-            return currentDiff === 'devil' ? devilRecipes : fullRecipes;
+            if (currentDiff === 'devil') {
+                return devilRecipes;
+            }
+            return getLimitedRecipes(currentDiff);
         };
 
         function findRecipe(el1, el2, recs) {
@@ -843,7 +888,7 @@
 
         function updateUI() {
             const currentLimit = limits[currentDiff];
-            document.getElementById('progress').textContent = `${openedElements.length} / ${currentLimit}+`;
+            document.getElementById('progress').textContent = `${openedElements.length} / ~${currentLimit}`;
             document.getElementById('currentScore').textContent = score;
             document.getElementById('hintsUsed').textContent = hintsUsed;
 
@@ -906,6 +951,14 @@
                 }
 
                 if (!openedElements.includes(result)) {
+                    if (openedElements.length >= limits[currentDiff]) {
+                        msg.style.color = '#ff4500';
+                        msg.textContent = `⚠️ Достигнут лимит элементов (${limits[currentDiff]}) для этого режима!`;
+                        slot1 = slot2 = null;
+                        updateUI();
+                        return;
+                    }
+
                     openedElements.push(result);
                     score += 100;
                     
@@ -938,6 +991,13 @@
 
         function getHint() {
             const msg = document.getElementById('gameMsg');
+
+            if (openedElements.length >= limits[currentDiff]) {
+                msg.style.color = '#ff4500';
+                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан!`;
+                return;
+            }
+
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
