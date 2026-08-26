@@ -356,9 +356,9 @@
     <div class="game-card">
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
-            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (250+)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (250+)</button>
+            <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (350+)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (350+)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (350+)</button>
         </div>
 
         <div class="score-board">
@@ -372,7 +372,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 250+</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 350+</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -734,7 +734,7 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 110, god: 350, devil: 350 };
+        const limits = { human: 55, mage: 350, god: 350, devil: 350 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
