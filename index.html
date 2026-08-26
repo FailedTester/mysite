@@ -747,6 +747,11 @@
             return currentDiff === 'devil' ? devilRecipes : fullRecipes;
         };
 
+        function findRecipe(el1, el2, recs) {
+            if (!el1 || !el2) return null;
+            return recs[`${el1}+${el2}`] || recs[`${el2}+${el1}`] || null;
+        }
+
         function unlockAchievement(id) {
             if (!achievements.includes(id)) {
                 achievements.push(id);
@@ -888,7 +893,7 @@
             const msg = document.getElementById('gameMsg');
             const recs = getActiveRecipes();
             
-            const result = recs[`${slot1}+${slot2}`] || recs[`${slot2}+${slot1}`];
+            const result = findRecipe(slot1, slot2, recs);
 
             if (result) {
                 if (slot1 === slot2) {
@@ -951,10 +956,16 @@
             const activeRecs = getActiveRecipes();
 
             for (const [recipeKey, res] of Object.entries(activeRecs)) {
-                const [el1, el2] = recipeKey.split('+');
+                const parts = recipeKey.split('+');
+                if (parts.length === 2) {
+                    const el1 = parts[0];
+                    const el2 = parts[1];
 
-                if (openedElements.includes(el1) && openedElements.includes(el2) && !openedElements.includes(res)) {
-                    possibleHints.push({ el1, el2, res });
+                    if (((openedElements.includes(el1) && openedElements.includes(el2)) || 
+                         (openedElements.includes(el2) && openedElements.includes(el1))) && 
+                        !openedElements.includes(res)) {
+                        possibleHints.push({ el1, el2, res });
+                    }
                 }
             }
 
