@@ -41,6 +41,7 @@
             margin-bottom: 0; border-radius: 0 0 10px 10px; border: none;
             background-color: rgba(10, 10, 10, 0.9); backdrop-filter: blur(4px);
             -webkit-overflow-scrolling: touch; /* Плавная прокрутка на мобильных */
+            overscroll-behavior: contain; /* Передает прокрутку странице при достижении границ виджета */
         }
         .simplex-container::-webkit-scrollbar { width: 6px; }
         .simplex-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
@@ -931,35 +932,6 @@
         }
 
         loadState();
-
-        // Скрипт для плавной прокрутки страницы сайта при достижении границ виджета SimpleX
-        document.addEventListener("DOMContentLoaded", () => {
-            const container = document.querySelector('.simplex-container');
-            if (!container) return;
-
-            let startY = 0;
-
-            container.addEventListener('touchstart', (e) => {
-                startY = e.touches[0].clientY;
-            }, { passive: true });
-
-            container.addEventListener('touchmove', (e) => {
-                const currentY = e.touches[0].clientY;
-                const deltaY = currentY - startY;
-                
-                const scrollTop = container.scrollTop;
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-
-                const isAtTop = scrollTop === 0;
-                const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-                if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
-                    window.scrollBy(0, -deltaY);
-                    startY = currentY;
-                }
-            }, { passive: true });
-        });
     </script>
     <script src="https://simplex.chat/js/channel-preview.js"></script>
 </body>
