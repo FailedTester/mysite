@@ -987,15 +987,35 @@
                 }
 
                 saveState();
-                slot1 = found.el1; slot2 = found.el2;
+                
+                // Автоматически выбираем оба элемента подсказки через selectElement,
+                // чтобы они корректно встали в слоты и подсветились
+                slot1 = null;
+                slot2 = null;
+                selectElement(found.el1);
+                selectElement(found.el2);
+
                 msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
-                msg.textContent = `💡 Подсказка: соедините ${found.el1} и ${found.el2}!`;
-                updateUI();
+                msg.textContent = `💡 Подсказка: ${found.el1} + ${found.el2} (нажмите Enter для соединения)`;
             } else {
                 msg.style.color = '#888';
                 msg.textContent = '🔍 Все доступные комбинации уже найдены!';
             }
         }
+
+        // Обработчик нажатия клавиши Enter для мгновенного соединения элементов
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                // Проверяем, что модальное окно наград не открыто и заполнены оба слота
+                const modal = document.getElementById('achModal');
+                if (modal && modal.style.display === 'flex') return;
+                
+                if (slot1 && slot2) {
+                    e.preventDefault();
+                    tryCombine();
+                }
+            }
+        });
 
         function resetAlchemy() {
             if (confirm(`Сбросить прогресс для уровня "${currentDiff.toUpperCase()}"?`)) {
