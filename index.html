@@ -622,7 +622,6 @@
 
         // Функция показа уведомления о достижении
         function showAchievementNotification(title) {
-            // Удаляем предыдущее уведомление, если есть
             const oldNotif = document.querySelector('.achievement-notification');
             if (oldNotif) oldNotif.remove();
             
@@ -634,7 +633,6 @@
             `;
             document.body.appendChild(notif);
             
-            // Автоматическое удаление через 4 секунды
             setTimeout(() => {
                 if (notif.parentNode) notif.remove();
             }, 4000);
@@ -650,19 +648,13 @@
             return recs[el1+'+'+el2] || recs[el2+'+'+el1] || null;
         }
 
+        // Функция разблокировки достижения - ТОЛЬКО уведомление и сохранение
         function unlockAchievement(id) {
             if (achievements.includes(id)) return;
             achievements.push(id);
             localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
             const ach = achievementsList.find(a=>a.id===id);
-            
-            // Показываем уведомление
             showAchievementNotification(`Получено достижение: ${ach.title}!`);
-            
-            // Также добавляем сообщение в игровой лог
-            const msg = document.getElementById('gameMsg');
-            msg.innerHTML = (msg.innerHTML.includes('Новый элемент') ? msg.innerHTML : '✨ Успешное соединение!') +
-                `<br><span style="color:#ffd700;font-weight:bold;">🏆 Достижение: ${ach.title}</span>`;
         }
 
         function toggleAchModal(show) {
@@ -682,26 +674,52 @@
             }).join('');
         }
 
+        // Функция проверки достижений с выводом в лог
+        function checkAndUnlockAchievement(id, mainMsg) {
+            if (achievements.includes(id)) return mainMsg;
+            achievements.push(id);
+            localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
+            const ach = achievementsList.find(a=>a.id===id);
+            showAchievementNotification(`Получено достижение: ${ach.title}!`);
+            return mainMsg + `<br><span style="color:#ffd700;font-weight:bold;">🏆 Достижение: ${ach.title}</span>`;
+        }
+
         function checkAchievements() {
-            if (openedElements.length > 4) unlockAchievement(1);
-            if (openedElements.length >= 30) unlockAchievement(2);
-            if (openedElements.length >= 50) unlockAchievement(3);
-            if (hintsUsed === 0 && openedElements.length >= limits[currentDiff]) unlockAchievement(4);
-            if (openedElements.includes("✨ Добро")) unlockAchievement(5);
-            if (selfCombineCount >= 5) unlockAchievement(6);
-            if (openedElements.includes("🕊️ Мир") || openedElements.includes("✨ Гармония")) unlockAchievement(7);
-            if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
-            if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
-            if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
+            const msg = document.getElementById('gameMsg');
+            let currentMsg = msg.innerHTML;
+            let updated = false;
             
-            // Достижение 11 проверяется отдельно в tryCombine()
+            // Проверяем каждое достижение
+            const checks = [
+                { id: 1, condition: openedElements.length > 4 },
+                { id: 2, condition: openedElements.length >= 30 },
+                { id: 3, condition: openedElements.length >= 50 },
+                { id: 4, condition: hintsUsed === 0 && openedElements.length >= limits[currentDiff] },
+                { id: 5, condition: openedElements.includes("✨ Добро") },
+                { id: 6, condition: selfCombineCount >= 5 },
+                { id: 7, condition: openedElements.includes("🕊️ Мир") || openedElements.includes("✨ Гармония") },
+                { id: 8, condition: errorPenaltySum >= 1000 && openedElements.length >= 75 },
+                { id: 9, condition: openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос") },
+                { id: 10, condition: openedElements.includes("✝️ Слова Добра ✝️") },
+                { id: 12, condition: currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15 },
+                { id: 13, condition: currentDiff === 'devil' && openedElements.length >= limits.devil && errorPenaltySum <= 100 }
+            ];
             
-            if (currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15) {
-                unlockAchievement(12);
+            for (const check of checks) {
+                if (check.condition && !achievements.includes(check.id)) {
+                    const ach = achievementsList.find(a=>a.id===check.id);
+                    achievements.push(check.id);
+                    localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
+                    showAchievementNotification(`Получено достижение: ${ach.title}!`);
+                    if (!updated) {
+                        currentMsg += `<br><span style="color:#ffd700;font-weight:bold;">🏆 Достижение: ${ach.title}</span>`;
+                        updated = true;
+                    }
+                }
             }
             
-            if (currentDiff === 'devil' && openedElements.length >= limits.devil && errorPenaltySum <= 100) {
-                unlockAchievement(13);
+            if (updated) {
+                msg.innerHTML = currentMsg;
             }
         }
 
@@ -813,6 +831,8 @@
                     openedElements.push(result);
                     score += 100;
                     
+                    let mainMsg = `✨ Новый элемент: ${result}! (+100 очков)`;
+                    
                     // Проверка для достижения 11 "Первый Круг"
                     if (currentDiff === 'devil' && hintsUsed === 0 && errorPenaltySum === 0) {
                         if (firstCircleProgress < firstCircleChain.length && 
@@ -821,11 +841,17 @@
                             localStorage.setItem('alchemy_first_circle_progress', firstCircleProgress);
                             
                             if (firstCircleProgress === firstCircleChain.length) {
-                                unlockAchievement(11);
+                                // Разблокируем достижение 11 с сообщением в логе
+                                if (!achievements.includes(11)) {
+                                    achievements.push(11);
+                                    localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
+                                    const ach = achievementsList.find(a=>a.id===11);
+                                    showAchievementNotification(`Получено достижение: ${ach.title}!`);
+                                    mainMsg += `<br><span style="color:#ffd700;font-weight:bold;">🏆 Достижение: ${ach.title}</span>`;
+                                }
                             }
                         } else if (firstCircleProgress < firstCircleChain.length && 
                                    openedElements.length > 4) {
-                            // Если открыли не тот элемент - сбрасываем прогресс
                             firstCircleProgress = 0;
                             localStorage.setItem('alchemy_first_circle_progress', 0);
                         }
@@ -834,7 +860,7 @@
                     if (currentDiff === 'devil' && hintsUsed === 0) devilChainStep++;
                     
                     msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
-                    msg.textContent = `✨ Новый элемент: ${result}! (+100 очков)`;
+                    msg.innerHTML = mainMsg;
                 } else {
                     msg.style.color = '#aaa';
                     msg.textContent = `Элемент "${result}" уже открыт.`;
@@ -845,7 +871,6 @@
                 if (currentDiff === 'devil') { 
                     devilSuccessStreak = 0; 
                     devilChainStep = 0;
-                    // Сброс прогресса достижения 11 при ошибке
                     firstCircleProgress = 0;
                     localStorage.setItem('alchemy_first_circle_progress', 0);
                 }
@@ -886,7 +911,6 @@
                 hintsUsed++;
                 if (currentDiff === 'devil') {
                     devilChainStep = 0;
-                    // Сброс прогресса достижения 11 при использовании подсказки
                     firstCircleProgress = 0;
                     localStorage.setItem('alchemy_first_circle_progress', 0);
                 }
