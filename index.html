@@ -193,6 +193,43 @@
             background: #ffd700; color: #000; border: none; width: 100%; padding: 8px;
             border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
+
+        /* Стили для уведомления о достижении */
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 15px 25px;
+            color: #ffd700;
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1);
+            animation: slideDown 0.5s ease-out, fadeOut 0.5s ease-in 3.5s forwards;
+            text-align: center;
+            max-width: 90%;
+            pointer-events: none;
+        }
+        .achievement-notification .ach-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .achievement-notification .ach-title {
+            color: #fff;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-100px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(-50px); }
+        }
     </style>
 </head>
 <body>
@@ -574,7 +611,7 @@
             {id:10,title:"Слово Добра",desc:"Откройте «✝️ Слова Добра ✝️»."},
             {id:11,title:"Первый Круг",desc:"Откройте на Дьяволе последовательно: Обитель Зла → Тление → Похоть → Ужас → Порочность → Погост → Убийство. Без ошибок и подсказок."},
             {id:12,title:"Искупление",desc:"Накопите 8 ошибок, затем совершите 15 успешных слияний подряд на Дьяволе."},
-            {id:13,title:"Энтропия Абсолюта",desc:"Достигните финала на Дьяволе, потратив ровно 100 баллов на ошибки."}
+            {id:13,title:"Энтропия Абсолюта",desc:"Достигните финала на Дьяволе, потратив не более 100 баллов на ошибки."}
         ];
 
         let currentDiff='human', openedElements=[], score=0, hintsUsed=0, slot1=null, slot2=null;
@@ -582,6 +619,26 @@
         let errorPenaltySum=0, selfCombineCount=0, devilSuccessStreak=0, devilChainStep=0;
         let firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
         const recipeCache={};
+
+        // Функция показа уведомления о достижении
+        function showAchievementNotification(title) {
+            // Удаляем предыдущее уведомление, если есть
+            const oldNotif = document.querySelector('.achievement-notification');
+            if (oldNotif) oldNotif.remove();
+            
+            const notif = document.createElement('div');
+            notif.className = 'achievement-notification';
+            notif.innerHTML = `
+                <span class="ach-icon">🏆</span>
+                <span class="ach-title">${title}</span>
+            `;
+            document.body.appendChild(notif);
+            
+            // Автоматическое удаление через 4 секунды
+            setTimeout(() => {
+                if (notif.parentNode) notif.remove();
+            }, 4000);
+        }
 
         function getActiveRecipes() {
             if (!recipeCache[currentDiff]) recipeCache[currentDiff] = getRecipes(currentDiff);
@@ -598,6 +655,11 @@
             achievements.push(id);
             localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
             const ach = achievementsList.find(a=>a.id===id);
+            
+            // Показываем уведомление
+            showAchievementNotification(`Получено достижение: ${ach.title}!`);
+            
+            // Также добавляем сообщение в игровой лог
             const msg = document.getElementById('gameMsg');
             msg.innerHTML = (msg.innerHTML.includes('Новый элемент') ? msg.innerHTML : '✨ Успешное соединение!') +
                 `<br><span style="color:#ffd700;font-weight:bold;">🏆 Достижение: ${ach.title}</span>`;
