@@ -269,7 +269,7 @@
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
             <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (171)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (200)</button>
         </div>
 
         <div class="score-board">
@@ -300,6 +300,17 @@
     <script>
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
+
+        // Цепочка для достижения "Первый Круг" (после 4 начальных элементов)
+        const firstCircleChain = [
+            "🏛️ Обитель Зла",
+            "🥀 Тление", 
+            "💋 Похоть",
+            "👻 Ужас",
+            "🔥 Порочность",
+            "⚰️ Погост",
+            "🔪 Убийство"
+        ];
 
         // Полные логические рецепты (сжатые)
         const fullRecipes = {
@@ -561,14 +572,15 @@
             {id:8,title:"Упорство",desc:"Потратьте >1000 очков на штрафы, преодолев 75 элементов."},
             {id:9,title:"Вселенский масштаб",desc:"Откройте «Мультивселенную» или «🌌 Космос»."},
             {id:10,title:"Слово Добра",desc:"Откройте «✝️ Слова Добра ✝️»."},
-            {id:11,title:"Первый Круг",desc:"10 элементов на уровне «Дьявол» без ошибок и подсказок."},
-            {id:12,title:"Искупление",desc:"8 ошибок, затем 15 успешных слияний подряд на «Дьяволе»."},
-            {id:13,title:"Энтропия Абсолюта",desc:"Финал «Дьявола» с ровно 100 баллами на ошибки."}
+            {id:11,title:"Первый Круг",desc:"Откройте на Дьяволе последовательно: Обитель Зла → Тление → Похоть → Ужас → Порочность → Погост → Убийство. Без ошибок и подсказок."},
+            {id:12,title:"Искупление",desc:"Накопите 8 ошибок, затем совершите 15 успешных слияний подряд на Дьяволе."},
+            {id:13,title:"Энтропия Абсолюта",desc:"Достигните финала на Дьяволе, потратив ровно 100 баллов на ошибки."}
         ];
 
         let currentDiff='human', openedElements=[], score=0, hintsUsed=0, slot1=null, slot2=null;
         let achievements=JSON.parse(localStorage.getItem('alchemy_achievements'))||[];
         let errorPenaltySum=0, selfCombineCount=0, devilSuccessStreak=0, devilChainStep=0;
+        let firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
         const recipeCache={};
 
         function getActiveRecipes() {
@@ -619,9 +631,16 @@
             if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
             if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
             if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
-            if (currentDiff === 'devil' && devilChainStep >= 10) unlockAchievement(11);
-            if (currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15) unlockAchievement(12);
-            if (currentDiff === 'devil' && openedElements.includes("✝️ Абсолютный Конец ✝️") && errorPenaltySum === 100) unlockAchievement(13);
+            
+            // Достижение 11 проверяется отдельно в tryCombine()
+            
+            if (currentDiff === 'devil' && errorPenaltySum >= 40 && devilSuccessStreak >= 15) {
+                unlockAchievement(12);
+            }
+            
+            if (currentDiff === 'devil' && openedElements.length >= limits.devil && errorPenaltySum <= 100) {
+                unlockAchievement(13);
+            }
         }
 
         function loadState() {
@@ -634,6 +653,7 @@
             selfCombineCount = parseInt(localStorage.getItem(`alchemy_self_${currentDiff}`)) || 0;
             devilSuccessStreak = parseInt(localStorage.getItem(`alchemy_devil_streak_${currentDiff}`)) || 0;
             devilChainStep = parseInt(localStorage.getItem(`alchemy_devil_chain_${currentDiff}`)) || 0;
+            firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
             delete recipeCache[currentDiff];
             updateUI();
         }
@@ -646,6 +666,8 @@
             localStorage.setItem(`alchemy_self_${currentDiff}`, selfCombineCount);
             localStorage.setItem(`alchemy_devil_streak_${currentDiff}`, devilSuccessStreak);
             localStorage.setItem(`alchemy_devil_chain_${currentDiff}`, devilChainStep);
+            localStorage.setItem('alchemy_first_circle_progress', firstCircleProgress);
+            
             let fixedBest = parseInt(localStorage.getItem(`alchemy_best_fixed_${currentDiff}`)) || 0;
             if (hintsUsed === 0 && score > fixedBest) {
                 localStorage.setItem(`alchemy_best_fixed_${currentDiff}`, score);
@@ -725,9 +747,30 @@
                         updateUI();
                         return;
                     }
+                    
                     openedElements.push(result);
                     score += 100;
+                    
+                    // Проверка для достижения 11 "Первый Круг"
+                    if (currentDiff === 'devil' && hintsUsed === 0 && errorPenaltySum === 0) {
+                        if (firstCircleProgress < firstCircleChain.length && 
+                            result === firstCircleChain[firstCircleProgress]) {
+                            firstCircleProgress++;
+                            localStorage.setItem('alchemy_first_circle_progress', firstCircleProgress);
+                            
+                            if (firstCircleProgress === firstCircleChain.length) {
+                                unlockAchievement(11);
+                            }
+                        } else if (firstCircleProgress < firstCircleChain.length && 
+                                   openedElements.length > 4) {
+                            // Если открыли не тот элемент - сбрасываем прогресс
+                            firstCircleProgress = 0;
+                            localStorage.setItem('alchemy_first_circle_progress', 0);
+                        }
+                    }
+                    
                     if (currentDiff === 'devil' && hintsUsed === 0) devilChainStep++;
+                    
                     msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
                     msg.textContent = `✨ Новый элемент: ${result}! (+100 очков)`;
                 } else {
@@ -737,7 +780,13 @@
             } else {
                 score = Math.max(0, score - 5);
                 errorPenaltySum += 5;
-                if (currentDiff === 'devil') { devilSuccessStreak = 0; devilChainStep = 0; }
+                if (currentDiff === 'devil') { 
+                    devilSuccessStreak = 0; 
+                    devilChainStep = 0;
+                    // Сброс прогресса достижения 11 при ошибке
+                    firstCircleProgress = 0;
+                    localStorage.setItem('alchemy_first_circle_progress', 0);
+                }
                 msg.style.color = '#b22222';
                 msg.textContent = '❌ Элементы не соединяются (-5 очков)';
             }
@@ -773,7 +822,12 @@
                 }
                 score = score >= 200 ? score - 200 : 0;
                 hintsUsed++;
-                if (currentDiff === 'devil') devilChainStep = 0;
+                if (currentDiff === 'devil') {
+                    devilChainStep = 0;
+                    // Сброс прогресса достижения 11 при использовании подсказки
+                    firstCircleProgress = 0;
+                    localStorage.setItem('alchemy_first_circle_progress', 0);
+                }
                 saveState();
                 slot1 = found.el1;
                 slot2 = found.el2;
@@ -798,9 +852,11 @@
             if (confirm(`Сбросить прогресс для уровня "${currentDiff.toUpperCase()}"?`)) {
                 openedElements = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
                 score = hintsUsed = errorPenaltySum = selfCombineCount = devilSuccessStreak = devilChainStep = 0;
+                firstCircleProgress = 0;
                 slot1 = slot2 = null;
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
+                localStorage.removeItem('alchemy_first_circle_progress');
                 delete recipeCache[currentDiff];
                 saveState();
                 document.getElementById('gameMsg').textContent = "Прогресс сброшен.";
