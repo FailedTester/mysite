@@ -358,7 +358,7 @@
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
             <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~250+)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (200)</button>
         </div>
 
         <div class="score-board">
@@ -806,9 +806,21 @@
             "🕳️ Великое Ничто+✝️ Конец Времен ✝️": "✝️ Абсолютный Конец ✝️"
         };
 
+        // Функция для получения дьявольских рецептов (ровно 196, чтобы всего было 200 элементов)
+        function getDevilRecipes() {
+            const entries = Object.entries(devilRecipes);
+            const result = {};
+            // Берем первые 196 рецептов (4 начальных + 196 = 200)
+            const limitedEntries = entries.slice(0, 196);
+            for (const [key, value] of limitedEntries) {
+                result[key] = value;
+            }
+            return result;
+        }
+
         // Функция для получения ограниченного количества рецептов
         function getLimitedRecipes(diff) {
-            if (diff === 'devil') return devilRecipes;
+            if (diff === 'devil') return getDevilRecipes();
             
             const limit = { human: 55, mage: 110, god: 200 }[diff];
             const result = {};
@@ -816,9 +828,6 @@
             const allEntries = Object.entries(fullRecipes);
             let count = 0;
 
-            // Многопроходный обход: рецепт может стоять в списке раньше своих
-            // ингредиентов, поэтому проходим список несколько раз, пока
-            // находятся новые доступные элементы (или не достигнут лимит).
             let addedInPass = true;
             while (addedInPass && count < limit) {
                 addedInPass = false;
@@ -858,7 +867,7 @@
             human: 55, 
             mage: 110, 
             god: 200, 
-            devil: Object.keys(devilRecipes).length + 4 
+            devil: 200 
         };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
