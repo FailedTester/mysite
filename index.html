@@ -357,8 +357,8 @@
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~200)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~200)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~250+)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~250+)</button>
         </div>
 
         <div class="score-board">
@@ -601,8 +601,8 @@
             "🥀 Тление+⚰️ Погост": "🪦 Заброшенные Могилы",
             "🪦 Заброшенные Могилы+🏚️ Руины Города": "👻 Призрачный Мир",
             "👻 Призрачный Мир+👻 Ужас": "🦇 Легион Теней",
-            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Тёмная Сущность",
-            "🌑 Тёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
+            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Tёмная Сущность",
+            "🌑 Tёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
             "🌀 Сингулярный Вихрь+🌀 Энтропия Вселенной": "🕳️ Первозданный Хаос",
             "🗡️ Злоба+🗡️ Удар в Спину": "🔪 Коварство",
             "🔪 Коварство+🐍 Вероломство": "🕷️ Паутина Интриг",
@@ -734,18 +734,7 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        // Автоматически вычисляем реальное количество элементов по рецептам для режимов Бог и Маг, чтобы избежать фиксации на 112
-        const getGodLimit = () => {
-            const uniqueGodElements = new Set(Object.values(fullRecipes));
-            return uniqueGodElements.size + initialElements.length;
-        };
-
-        const limits = { 
-            human: 55, 
-            mage: 110, 
-            get god() { return getGodLimit(); }, 
-            devil: 200 
-        };
+        const limits = { human: 55, mage: 110, god: Object.keys(fullRecipes).length, devil: Object.keys(devilRecipes).length };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -813,7 +802,8 @@
 
         function loadState() {
             const defaultInit = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
-            openedElements = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || defaultInit;
+            let saved = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || defaultInit;
+            openedElements = Array.from(new Set(saved)); // Удаляем дубликаты на случай их появления
             score = parseInt(localStorage.getItem(`alchemy_score_${currentDiff}`)) || 0;
             hintsUsed = parseInt(localStorage.getItem(`alchemy_hints_${currentDiff}`)) || 0;
             errorPenaltySum = parseInt(localStorage.getItem(`alchemy_errors_${currentDiff}`)) || 0;
@@ -959,7 +949,7 @@
 
             if (openedElements.length >= limits[currentDiff]) {
                 msg.style.color = '#ff4500';
-                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан! Перейдите на следующий уровень сложности.`;
+                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан!`;
                 return;
             }
 
@@ -967,10 +957,10 @@
             const activeRecs = getActiveRecipes();
 
             for (const [recipeKey, res] of Object.entries(activeRecs)) {
-                const parts = recipeKey.split('+');
-                if (parts.length === 2) {
-                    const el1 = parts[0];
-                    const el2 = parts[1];
+                const plusIndex = recipeKey.indexOf('+');
+                if (plusIndex !== -1) {
+                    const el1 = recipeKey.substring(0, plusIndex);
+                    const el2 = recipeKey.substring(plusIndex + 1);
 
                     if (((openedElements.includes(el1) && openedElements.includes(el2)) || 
                          (openedElements.includes(el2) && openedElements.includes(el1))) && 
@@ -1041,4 +1031,3 @@
     <script src="https://simplex.chat/js/channel-preview.js"></script>
 </body>
 </html>
-```[cite: 1]
