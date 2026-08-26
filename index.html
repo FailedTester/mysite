@@ -988,7 +988,6 @@
 
                 saveState();
                 
-                // Кладём подсказанные элементы в слоты, чтобы по нажатию Enter их можно было сразу соединить
                 slot1 = found.el1;
                 slot2 = found.el2;
                 updateUI();
@@ -1001,7 +1000,6 @@
             }
         }
 
-        // Обработчик нажатия клавиши Enter для мгновенного соединения элементов
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const modal = document.getElementById('achModal');
