@@ -372,7 +372,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / ~55</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 215</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -734,7 +734,8 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 110, god: 200, devil: 200 };
+        // Изменено: лимит увеличен до 215, чтобы полностью вместить все элементы режима Бог
+        const limits = { human: 55, mage: 110, god: 215, devil: 215 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
