@@ -635,7 +635,7 @@
             "😇 Святость+✨ Добро": "👼 Святой Дух"
         };
 
-        // Дьявольские рецепты (полные)
+        // Дьявольские рецепты
         const devilRecipes = {
             "🖤 Грех+⚡ Страх": "🏛️ Обитель Зла",
             "🖤 Грех+💀 Смерть": "🥀 Тление",
@@ -806,19 +806,41 @@
             "🕳️ Великое Ничто+✝️ Конец Времен ✝️": "✝️ Абсолютный Конец ✝️"
         };
 
-        // Функция для получения дьявольских рецептов (ровно 196, чтобы всего было 200 элементов)
+        // Функция для подсчета реально достижимых элементов у Дьявола
+        function countReachableDevilElements() {
+            const openedSet = new Set(devilInitialElements);
+            const entries = Object.entries(devilRecipes);
+            let added = true;
+            
+            while (added) {
+                added = false;
+                for (const [key, value] of entries) {
+                    if (openedSet.has(value)) continue;
+                    const [el1, el2] = key.split('+');
+                    if (openedSet.has(el1) && openedSet.has(el2)) {
+                        openedSet.add(value);
+                        added = true;
+                    }
+                }
+            }
+            
+            return openedSet.size;
+        }
+
+        // Функция для получения дьявольских рецептов
         function getDevilRecipes() {
             const entries = Object.entries(devilRecipes);
             const result = {};
             const openedSet = new Set(devilInitialElements);
             let count = 0;
-            let addedInPass = true;
+            const targetCount = 196; // 200 - 4 начальных
             
-            // Многопроходный обход: добавляем только те рецепты, у которых оба ингредиента уже есть
-            while (addedInPass && count < 196) {
+            // Используем многопроходный алгоритм для сбора достижимых рецептов
+            let addedInPass = true;
+            while (addedInPass && count < targetCount) {
                 addedInPass = false;
                 for (const [key, value] of entries) {
-                    if (count >= 196) break;
+                    if (count >= targetCount) break;
                     if (result[key]) continue;
                     
                     const [el1, el2] = key.split('+');
@@ -863,6 +885,17 @@
             return result;
         }
 
+        // Подсчитываем реальное количество достижимых элементов для Дьявола
+        const realDevilLimit = countReachableDevilElements();
+        
+        // Используем это значение или 200, если достигнуто
+        const limits = { 
+            human: 55, 
+            mage: 110, 
+            god: 200, 
+            devil: Math.min(realDevilLimit, 200) 
+        };
+
         const achievementsList = [
             { id: 1, title: "Искра творения", desc: "Соедините первые два элемента и получите новый." },
             { id: 2, title: "Исследователь стихий", desc: "Откройте 30 уникальных элементов в игре." },
@@ -879,13 +912,7 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { 
-            human: 55, 
-            mage: 110, 
-            god: 200, 
-            devil: 200 
-        };
-        
+        // Обновляем лимит для Дьявола в кнопках
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
         let errorPenaltySum = 0;
