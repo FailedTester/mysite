@@ -357,8 +357,8 @@
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~250+)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~250+)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (250+)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (250+)</button>
         </div>
 
         <div class="score-board">
@@ -372,7 +372,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / ~55</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 250+</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -734,7 +734,7 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 110, god: Object.keys(fullRecipes).length, devil: Object.keys(devilRecipes).length };
+        const limits = { human: 55, mage: 110, god: 350, devil: 350 };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -803,7 +803,7 @@
         function loadState() {
             const defaultInit = currentDiff === 'devil' ? [...devilInitialElements] : [...initialElements];
             let saved = JSON.parse(localStorage.getItem(`alchemy_opened_${currentDiff}`)) || defaultInit;
-            openedElements = Array.from(new Set(saved)); // Удаляем дубликаты на случай их появления
+            openedElements = Array.from(new Set(saved));
             score = parseInt(localStorage.getItem(`alchemy_score_${currentDiff}`)) || 0;
             hintsUsed = parseInt(localStorage.getItem(`alchemy_hints_${currentDiff}`)) || 0;
             errorPenaltySum = parseInt(localStorage.getItem(`alchemy_errors_${currentDiff}`)) || 0;
@@ -843,7 +843,7 @@
 
         function updateUI() {
             const currentLimit = limits[currentDiff];
-            document.getElementById('progress').textContent = `${openedElements.length} / ~${currentLimit}`;
+            document.getElementById('progress').textContent = `${openedElements.length} / ${currentLimit}+`;
             document.getElementById('currentScore').textContent = score;
             document.getElementById('hintsUsed').textContent = hintsUsed;
 
@@ -906,14 +906,6 @@
                 }
 
                 if (!openedElements.includes(result)) {
-                    if (openedElements.length >= limits[currentDiff]) {
-                        msg.style.color = '#ff4500';
-                        msg.textContent = `⚠️ Достигнут лимит элементов (${limits[currentDiff]}) для этого режима!`;
-                        slot1 = slot2 = null;
-                        updateUI();
-                        return;
-                    }
-
                     openedElements.push(result);
                     score += 100;
                     
@@ -946,13 +938,6 @@
 
         function getHint() {
             const msg = document.getElementById('gameMsg');
-
-            if (openedElements.length >= limits[currentDiff]) {
-                msg.style.color = '#ff4500';
-                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан!`;
-                return;
-            }
-
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
