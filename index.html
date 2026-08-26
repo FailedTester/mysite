@@ -357,8 +357,8 @@
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (~55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (~110)</button>
-            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~215)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~215)</button>
+            <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (~200)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (~200)</button>
         </div>
 
         <div class="score-board">
@@ -372,7 +372,7 @@
         </div>
 
         <div class="game-header">
-            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / 215</span></div>
+            <div>Открыто элементов: <span id="progress" class="progress-badge">4 / ~55</span></div>
             <button class="reset-btn" onclick="resetAlchemy()">Сброс</button>
         </div>
 
@@ -387,12 +387,6 @@
     </div>
 
     <script>
-        const GAME_VERSION = 'v3_unlocked_limits';
-        if (localStorage.getItem('alchemy_version') !== GAME_VERSION) {
-            localStorage.clear();
-            localStorage.setItem('alchemy_version', GAME_VERSION);
-        }
-
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
         
@@ -457,7 +451,7 @@
             "🚢 Мегаполис+🌐 Интернет": "📡 Глобальная Сеть", "📡 Глобальная Сеть+🧠 Мудрость": "💡 Ноосфера",
             "💡 Ноосфера+✨ Добро": "🌟 Всеобщее Благо", "🌟 Всеобщее Благо+✝️ Слова Добра ✝️": "🕊️ Благоденствие",
             "🎵 Музыка+❤️ Душа": "✨ Вдохновение", "✨ Вдохновение+🎨 Картина": "🖼️ Шедевр",
-            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 Ученый",
+            "🖼️ Шедевр+🧠 Мудрость": "🏛️ Музей", "🏛️ Музей+👤 Человек": "🧑‍🎓 У ученый",
             "🧑‍🎓 Ученый+💻 Компьютер": "🤖 Искусственный Интеллект", "🤖 Искусственный Интеллект+🌐 Интернет": "🌐 Сингулярность",
             "🌐 Сингулярность+✨ Гармония": "🌌 Квантовый Разум", "🌌 Квантовый Разум+❤️ Душа": "✨ Пробуждение",
 
@@ -607,8 +601,8 @@
             "🥀 Тление+⚰️ Погост": "🪦 Заброшенные Могилы",
             "🪦 Заброшенные Могилы+🏚️ Руины Города": "👻 Призрачный Мир",
             "👻 Призрачный Мир+👻 Ужас": "🦇 Легион Теней",
-            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Tёмная Сущность",
-            "🌑 Tёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
+            "🦇 Легион Теней+🕳️ Абсолютная Пустота": "🌑 Тёмная Сущность",
+            "🌑 Тёмная Сущность+🌌 Космический Распад": "🌀 Сингулярный Вихрь",
             "🌀 Сингулярный Вихрь+🌀 Энтропия Вселенной": "🕳️ Первозданный Хаос",
             "🗡️ Злоба+🗡️ Удар в Спину": "🔪 Коварство",
             "🔪 Коварство+🐍 Вероломство": "🕷️ Паутина Интриг",
@@ -740,7 +734,18 @@
             { id: 13, title: "Энтропия Абсолюта", desc: "Достигните финала («✝️ Абсолютный Конец ✝️») на уровне «Дьявол», потратив ровно 100 баллов на ошибки." }
         ];
 
-        const limits = { human: 55, mage: 110, god: 220, devil: 220 };
+        // Автоматически вычисляем реальное количество элементов по рецептам для режимов Бог и Маг, чтобы избежать фиксации на 112
+        const getGodLimit = () => {
+            const uniqueGodElements = new Set(Object.values(fullRecipes));
+            return uniqueGodElements.size + initialElements.length;
+        };
+
+        const limits = { 
+            human: 55, 
+            mage: 110, 
+            get god() { return getGodLimit(); }, 
+            devil: 200 
+        };
         
         let currentDiff = 'human', openedElements = [], score = 0, hintsUsed = 0, slot1 = null, slot2 = null;
         let achievements = JSON.parse(localStorage.getItem('alchemy_achievements')) || [];
@@ -798,7 +803,7 @@
             if (selfCombineCount >= 5) unlockAchievement(6);
             if (openedElements.includes("🕊️ Мир") || openedElements.includes("✨ Гармония")) unlockAchievement(7);
             if (errorPenaltySum >= 1000 && openedElements.length >= 75) unlockAchievement(8);
-            if (openedElements.includes("Мультивселенную") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
+            if (openedElements.includes("Мультивселенная") || openedElements.includes("🌌 Космос")) unlockAchievement(9);
             if (openedElements.includes("✝️ Слова Добра ✝️")) unlockAchievement(10);
             
             if (currentDiff === 'devil' && devilChainStep >= 10) unlockAchievement(11);
@@ -911,6 +916,14 @@
                 }
 
                 if (!openedElements.includes(result)) {
+                    if (openedElements.length >= limits[currentDiff]) {
+                        msg.style.color = '#ff4500';
+                        msg.textContent = `⚠️ Достигнут лимит элементов (${limits[currentDiff]}) для этого режима!`;
+                        slot1 = slot2 = null;
+                        updateUI();
+                        return;
+                    }
+
                     openedElements.push(result);
                     score += 100;
                     
@@ -943,6 +956,13 @@
 
         function getHint() {
             const msg = document.getElementById('gameMsg');
+
+            if (openedElements.length >= limits[currentDiff]) {
+                msg.style.color = '#ff4500';
+                msg.textContent = `⚠️ Лимит элементов (${limits[currentDiff]}) исчерпан! Перейдите на следующий уровень сложности.`;
+                return;
+            }
+
             let possibleHints = [];
             const activeRecs = getActiveRecipes();
 
@@ -1021,3 +1041,4 @@
     <script src="https://simplex.chat/js/channel-preview.js"></script>
 </body>
 </html>
+```[cite: 1]
