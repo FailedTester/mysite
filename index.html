@@ -306,7 +306,7 @@
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
             <button class="diff-btn" data-diff="god" onclick="setDifficulty('god')">⚡ Бог (200)</button>
-            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (200)</button>
+            <button class="diff-btn devil-btn" data-diff="devil" onclick="setDifficulty('devil')">👹 Дьявол (171)</button>
         </div>
 
         <div class="score-board">
@@ -619,9 +619,6 @@
         let errorPenaltySum=0, selfCombineCount=0, devilSuccessStreak=0, devilChainStep=0;
         let firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
         const recipeCache={};
-        
-        // Кэш для оптимизации рендеринга сетки
-        let lastElementsHash = '';
 
         // Функция показа уведомления о достижении
         function showAchievementNotification(title) {
@@ -768,7 +765,6 @@
             loadState();
         }
 
-        // ОПТИМИЗИРОВАННАЯ функция updateUI с кэшированием
         function updateUI() {
             const currentLimit = limits[currentDiff];
             document.getElementById('progress').textContent = `${openedElements.length} / ${currentLimit}`;
@@ -791,37 +787,18 @@
             s2.textContent = slot2 || "Слот 2";
             s2.className = slot2 ? "slot active" : "slot";
 
-            // ОПТИМИЗАЦИЯ: обновляем только если изменился список элементов
             const grid = document.getElementById('elementsGrid');
-            const currentHash = openedElements.join('|');
-            
-            if (lastElementsHash !== currentHash) {
-                lastElementsHash = currentHash;
-                
-                // Используем DocumentFragment для массового добавления (быстрее)
-                const fragment = document.createDocumentFragment();
-                openedElements.forEach(el => {
-                    const btn = document.createElement('div');
-                    let cls = 'element-btn';
-                    if (currentDiff === 'devil') cls += ' devil-glow';
-                    if (el === slot1 || el === slot2) cls += ' selected';
-                    btn.className = cls;
-                    btn.textContent = el;
-                    btn.onclick = () => selectElement(el);
-                    fragment.appendChild(btn);
-                });
-                
-                // Очищаем и добавляем за один раз
-                grid.innerHTML = '';
-                grid.appendChild(fragment);
-            } else {
-                // Если список не изменился - только обновляем выделение
-                const btns = grid.querySelectorAll('.element-btn');
-                btns.forEach(btn => {
-                    const isSelected = btn.textContent === slot1 || btn.textContent === slot2;
-                    btn.classList.toggle('selected', isSelected);
-                });
-            }
+            grid.innerHTML = '';
+            openedElements.forEach(el => {
+                const btn = document.createElement('div');
+                let cls = 'element-btn';
+                if (currentDiff === 'devil') cls += ' devil-glow';
+                if (el === slot1 || el === slot2) cls += ' selected';
+                btn.className = cls;
+                btn.textContent = el;
+                btn.onclick = () => selectElement(el);
+                grid.appendChild(btn);
+            });
         }
 
         function selectElement(el) {
