@@ -189,6 +189,18 @@
             border-radius: 2px;
             transition: width 0.3s ease;
         }
+        #eventIndicatorExtra {
+            width: 100%;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #aaa;
+            text-align: left;
+            white-space: pre-line;
+            border-top: 1px solid #333;
+            padding-top: 6px;
+            display: none;
+            line-height: 1.6;
+        }
 
         .alchemy-altar {
             display: flex; justify-content: center; align-items: center; gap: 10px;
@@ -496,6 +508,7 @@
             <div id="eventIndicatorBar">
                 <div id="eventIndicatorBarFill" style="width: 100%;"></div>
             </div>
+            <div id="eventIndicatorExtra"></div>
         </div>
 
         <div class="alchemy-altar">
@@ -854,10 +867,10 @@
         let turnsSinceLastEvent = 0;
         const EVENT_COOLDOWN = 8;
         const EVENT_CHANCE = 0.20;
-        let stormPenalty = 5;
+        let stormPenalty = 0;
         let shieldActive = false;
 
-        // --- СПИСОК СОБЫТИЙ ---
+        // --- СПИСОК СОБЫТИЙ (ИСПРАВЛЕННЫЙ) ---
         const safeEvents = [
             {
                 id: 'alchemy_boom',
@@ -881,7 +894,7 @@
                     if (entries.length > 0) {
                         const [key, result] = entries[Math.floor(Math.random() * entries.length)];
                         const [el1, el2] = key.split('+');
-                        document.getElementById('gameMsg').innerHTML = `💡 ${el1} + ${el2} = ${result}`;
+                        updateEventExtra(`💡 ${el1} + ${el2} = ${result}`);
                     }
                 },
                 color: '#4CAF50'
@@ -913,7 +926,7 @@
                             const [el1, el2] = key.split('+');
                             msg += `\n${el1} + ${el2} = ${value}`;
                         });
-                        document.getElementById('gameMsg').innerHTML = msg;
+                        updateEventExtra(msg);
                     }
                 },
                 color: '#00BCD4'
@@ -933,18 +946,18 @@
                         const [el1, el2] = key.split('+');
                         msg += `\n${value} = ${el1} + ${el2}`;
                     });
-                    document.getElementById('gameMsg').innerHTML = msg;
+                    updateEventExtra(msg);
                 },
                 color: '#FFD700'
             },
             {
                 id: 'alchemy_storm',
                 name: '⛈️ Алхимическая буря',
-                description: 'x5 очков, +10 штраф (5 ходов)',
+                description: 'x5 очков, +10 штраф (20 ходов)',
                 emoji: '🌩️',
-                duration: 5,
+                duration: 20,
                 effect: () => { scoreMultiplier = 5; stormPenalty = 10; },
-                endEffect: () => { scoreMultiplier = 1; stormPenalty = 5; },
+                endEffect: () => { scoreMultiplier = 1; stormPenalty = 0; },
                 color: '#FF6B00'
             },
             {
@@ -997,6 +1010,19 @@
             } else {
                 indicator.classList.remove('show');
                 indicator.style.display = 'none';
+                document.getElementById('eventIndicatorExtra').style.display = 'none';
+                document.getElementById('eventIndicatorExtra').textContent = '';
+            }
+        }
+
+        function updateEventExtra(text) {
+            const extra = document.getElementById('eventIndicatorExtra');
+            if (text) {
+                extra.style.display = 'block';
+                extra.textContent = text;
+            } else {
+                extra.style.display = 'none';
+                extra.textContent = '';
             }
         }
 
@@ -1020,6 +1046,9 @@
             
             activeEvent = selectedEvent;
             eventTurnsLeft = selectedEvent.duration;
+            
+            // Очищаем доп. информацию
+            updateEventExtra('');
             
             if (selectedEvent.effect) selectedEvent.effect();
             
@@ -1046,6 +1075,7 @@
                 msg.style.color = '#888';
                 msg.innerHTML = `⏰ Событие "${activeEvent.name}" завершилось`;
                 activeEvent = null;
+                updateEventExtra('');
                 
                 const gameCard = document.getElementById('gameCard');
                 gameCard.style.borderColor = '#444';
@@ -1213,6 +1243,7 @@
             // Сохраняем текущее состояние события перед сменой
             const savedEvent = activeEvent;
             const savedTurns = eventTurnsLeft;
+            const savedExtra = document.getElementById('eventIndicatorExtra').textContent;
             
             currentDiff = diff;
             slot1 = slot2 = null;
@@ -1228,6 +1259,10 @@
                     eventTurnsLeft = savedTurns;
                     if (activeEvent.effect) activeEvent.effect();
                     updateEventIndicator();
+                    if (savedExtra) {
+                        document.getElementById('eventIndicatorExtra').textContent = savedExtra;
+                        document.getElementById('eventIndicatorExtra').style.display = 'block';
+                    }
                     const gameCard = document.getElementById('gameCard');
                     gameCard.style.borderColor = activeEvent.color;
                     gameCard.style.boxShadow = `0 0 30px ${activeEvent.color}44`;
@@ -1294,7 +1329,7 @@
 
         const clearSlot = num => { if (num === 1) slot1 = null; if (num === 2) slot2 = null; updateUI(); };
 
-        // ===== ИСПРАВЛЕННАЯ tryCombine (щит блокирует штрафы) =====
+        // ===== ИСПРАВЛЕННАЯ tryCombine (щит блокирует штрафы, буря добавляет +10) =====
         function tryCombine() {
             const msg = document.getElementById('gameMsg');
             const recs = getActiveRecipes();
@@ -1358,12 +1393,15 @@
                 }
             } else {
                 // ❌ НЕУДАЧНАЯ КОМБИНАЦИЯ
-                let penalty = 5;
+                let penalty = 5; // Стандартный штраф
+                
+                // Если активна буря — добавляем +10 к штрафу
+                if (stormPenalty > 0) {
+                    penalty = 5 + stormPenalty; // 5 + 10 = 15
+                }
+                
+                // Если активен щит — штраф 0
                 let shieldUsed = false;
-                
-                if (stormPenalty > 5) penalty = stormPenalty;
-                
-                // ✅ Если активен щит — штраф 0
                 if (shieldActive) {
                     penalty = 0;
                     shieldUsed = true;
@@ -1458,11 +1496,12 @@
                     updateEventIndicator();
                 }
                 scoreMultiplier = 1;
-                stormPenalty = 5;
+                stormPenalty = 0;
                 shieldActive = false;
                 turnCounter = 0;
                 lastEventTurn = 0;
                 turnsSinceLastEvent = 0;
+                updateEventExtra('');
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
                 localStorage.removeItem('alchemy_first_circle_progress');
