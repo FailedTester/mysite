@@ -153,6 +153,7 @@
             font-size: 13px;
             transition: all 0.3s ease;
             backdrop-filter: blur(4px);
+            flex-wrap: wrap;
         }
         #eventIndicator.show {
             display: flex;
@@ -180,6 +181,7 @@
             border-radius: 2px;
             margin-top: 6px;
             overflow: hidden;
+            flex-basis: 100%;
         }
         #eventIndicatorBarFill {
             height: 100%;
@@ -1269,9 +1271,14 @@
 
         const clearSlot = num => { if (num === 1) slot1 = null; if (num === 2) slot2 = null; updateUI(); };
 
+        // ===== ИСПРАВЛЕННАЯ tryCombine =====
         function tryCombine() {
             const msg = document.getElementById('gameMsg');
             const recs = getActiveRecipes();
+            
+            // ✅ ХОД СЧИТАЕТСЯ ВСЕГДА (и при ошибке, и при успехе)
+            processTurn();
+            
             const result = findRecipe(slot1, slot2, recs);
 
             if (result) {
@@ -1322,7 +1329,6 @@
                     msg.innerHTML = mainMsg;
                     
                     tryTriggerEvent();
-                    processTurn();
                 } else {
                     msg.style.color = '#aaa';
                     msg.textContent = `Элемент "${result}" уже открыт.`;
