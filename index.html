@@ -52,6 +52,7 @@
             background-color: rgba(17, 17, 17, 0.9); border: 1px dashed #444;
             border-radius: 12px; text-align: center; backdrop-filter: blur(4px);
             margin-bottom: 15px;
+            transition: border-color 0.5s, box-shadow 0.5s;
         }
         .spoiler-wrapper {
             width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
@@ -224,6 +225,64 @@
             from { opacity: 1; transform: translateX(-50%) translateY(0); }
             to { opacity: 0; transform: translateX(-50%) translateY(-50px); }
         }
+        
+        /* --- Стили для уведомлений о событиях --- */
+        .event-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(145deg, #1a1a2e, #0d0d1a);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px 40px;
+            text-align: center;
+            z-index: 1500;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            min-width: 280px;
+            max-width: 90vw;
+        }
+        .event-notification.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: none;
+        }
+        .event-notification .event-emoji {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .event-notification .event-name {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'UnifrakturMaguntia', serif;
+            letter-spacing: 1px;
+        }
+        .event-notification .event-desc {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .event-notification .event-rarity {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: #333;
+            color: #888;
+        }
+        .event-rarity.common { background: #2a2a2a; color: #aaa; }
+        .event-rarity.uncommon { background: #1a3a1a; color: #4CAF50; }
+        .event-rarity.rare { background: #1a2a4a; color: #2196F3; }
+        .event-rarity.epic { background: #3a1a4a; color: #9C27B0; }
 
         /* ===== Финальная трансформация ===== */
         .finale-overlay {
@@ -400,7 +459,7 @@
         <details class="custom-spoiler">
             <summary><span class="gothic-title">Об игре</span></summary>
             <div class="spoiler-content">
-                <p>Хотите узнать рецепт души, любви или Вселенной? Всё начинается с простоты... Именно о ней повествует игра. У нее нет названия. Вы просто получаете начальные элементы и соединяете два из них. Если они сочетаются, открывается новый элемент, который вы также можете соединить с чем-нибудь, усложняя структуру материи раз за разом.</p>
+                <p>Хотите узнать рецепт души, любви или Вселенной? Всё начинается с простоты... Именно о ней повествует игра. У нее нет названия. Вы просто получаете начальные элементы и соединяте два из них. Если они сочетаются, открывается новый элемент, который вы также можете соединить с чем-нибудь, усложняя структуру материи раз за разом.</p>
                 <p>В игре есть четыре уровня: человек, маг, Бог и разрушительный Дьявол.</p>
                 <p>Разумеется, что человеку не подвластно все и он создаст примерно полсотни элементов. Маг же обладает сверхспособностями и вы можете сотворить гораздо больше стихий. Но если вы решите властвовать над миром - переходите к уровню Бог. А для познания энтропии и хаоса создан зловещий уровень Дьявол с беспрецедентными разрушительными рецептами.</p>
                 <p>Также есть система достижений. В разделе "Награды" о них написано подробнее.</p>
@@ -412,7 +471,7 @@
         </details>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" id="gameCard">
         <div class="diff-selector">
             <button class="diff-btn active" data-diff="human" onclick="setDifficulty('human')">👨 Человек (55)</button>
             <button class="diff-btn" data-diff="mage" onclick="setDifficulty('mage')">🧙‍♂️ Маг (110)</button>
@@ -444,6 +503,9 @@
         <div class="game-msg" id="gameMsg">Выберите два элемента для соединения</div>
         <div class="elements-grid" id="elementsGrid"></div>
     </div>
+
+    <!-- Контейнер для уведомлений о событиях -->
+    <div id="eventNotificationContainer"></div>
 
     <script>
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
@@ -782,6 +844,284 @@
         let firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
         const recipeCache={};
 
+        // --- ПЕРЕМЕННЫЕ ДЛЯ СОБЫТИЙ ---
+        let activeEvent = null;
+        let eventTurnsLeft = 0;
+        let scoreMultiplier = 1;
+        let turnCounter = 0;
+        let lastEventTurn = 0;
+        let turnsSinceLastEvent = 0;
+        const EVENT_COOLDOWN = 8;
+        const EVENT_CHANCE = 0.20;
+
+        // --- СПИСОК СОБЫТИЙ ---
+        const safeEvents = [
+            {
+                id: 'alchemy_boom',
+                name: '🔥 Алхимический бум',
+                description: 'Следующие 7 комбинаций дают +200% очков!',
+                emoji: '💥',
+                duration: 7,
+                effect: () => { scoreMultiplier = 3; },
+                endEffect: () => { scoreMultiplier = 1; },
+                color: '#ff6b00',
+                rarity: 'common'
+            },
+            {
+                id: 'ancient_wisdom',
+                name: '📖 Мудрость предков',
+                description: 'Показывает рецепт для случайного элемента',
+                emoji: '🧠',
+                duration: 1,
+                effect: () => {
+                    const recs = getActiveRecipes();
+                    const entries = Object.entries(recs);
+                    if (entries.length > 0) {
+                        const [key, result] = entries[Math.floor(Math.random() * entries.length)];
+                        const [el1, el2] = key.split('+');
+                        showEventNotificationText(`💡 ${el1} + ${el2} = ${result}`);
+                    }
+                },
+                color: '#4CAF50',
+                rarity: 'uncommon'
+            },
+            {
+                id: 'divine_blessing',
+                name: '✨ Божественное благословение',
+                description: 'Следующие 5 комбинаций дают +50% очков',
+                emoji: '🌟',
+                duration: 5,
+                effect: () => { scoreMultiplier = 1.5; },
+                endEffect: () => { scoreMultiplier = 1; },
+                color: '#FF6B6B',
+                rarity: 'common'
+            },
+            {
+                id: 'echo_of_time',
+                name: '⏳ Эхо времени',
+                description: 'Показывает 3 случайных рецепта из вашей коллекции',
+                emoji: '🔄',
+                duration: 1,
+                effect: () => {
+                    const recs = getActiveRecipes();
+                    const entries = Object.entries(recs);
+                    if (entries.length >= 3) {
+                        const shuffled = [...entries].sort(() => Math.random() - 0.5);
+                        const selected = shuffled.slice(0, 3);
+                        let msg = '📜 Найдены рецепты:\n';
+                        selected.forEach(([key, value]) => {
+                            const [el1, el2] = key.split('+');
+                            msg += `\n${el1} + ${el2} = ${value}`;
+                        });
+                        showEventNotificationText(msg);
+                    }
+                },
+                color: '#00BCD4',
+                rarity: 'uncommon'
+            },
+            {
+                id: 'gift_of_foresight',
+                name: '🔮 Дар предвидения',
+                description: 'Показывает, какие элементы будут открыты в будущем',
+                emoji: '👁️',
+                duration: 1,
+                effect: () => {
+                    const recs = getActiveRecipes();
+                    const entries = Object.entries(recs);
+                    if (entries.length > 0) {
+                        const shuffled = [...entries].sort(() => Math.random() - 0.5);
+                        const future = shuffled.slice(0, 2);
+                        let msg = '🔮 Возможные открытия:\n';
+                        future.forEach(([key, value]) => {
+                            const [el1, el2] = key.split('+');
+                            msg += `\n${el1} + ${el2} → ${value}`;
+                        });
+                        showEventNotificationText(msg);
+                    }
+                },
+                color: '#FFD700',
+                rarity: 'rare'
+            },
+            {
+                id: 'record_book',
+                name: '📚 Книга рекордов',
+                description: 'Показывает 5 самых редких элементов в игре',
+                emoji: '📖',
+                duration: 1,
+                effect: () => {
+                    const recs = getActiveRecipes();
+                    const entries = Object.entries(recs);
+                    const rare = entries.slice(-5);
+                    let msg = '📚 Редкие элементы:\n';
+                    rare.forEach(([key, value]) => {
+                        const [el1, el2] = key.split('+');
+                        msg += `\n${value} = ${el1} + ${el2}`;
+                    });
+                    showEventNotificationText(msg);
+                },
+                color: '#FFD700',
+                rarity: 'rare'
+            },
+            {
+                id: 'alchemy_storm',
+                name: '⛈️ Алхимическая буря',
+                description: 'Следующие 5 комбинаций дают x5 очков, но +10 штрафов за ошибку',
+                emoji: '🌩️',
+                duration: 5,
+                effect: () => {
+                    scoreMultiplier = 5;
+                    stormPenalty = 10;
+                },
+                endEffect: () => {
+                    scoreMultiplier = 1;
+                    stormPenalty = 5;
+                },
+                color: '#FF6B00',
+                rarity: 'epic'
+            },
+            {
+                id: 'alchemy_shield',
+                name: '🛡️ Алхимический щит',
+                description: 'Следующие 20 ошибок не штрафуются',
+                emoji: '🛡️',
+                duration: 20,
+                effect: () => { shieldActive = true; },
+                endEffect: () => { shieldActive = false; },
+                color: '#00BCD4',
+                rarity: 'epic'
+            }
+        ];
+
+        // --- ВЕРОЯТНОСТИ СОБЫТИЙ (по редкости) ---
+        const eventChances = {
+            'alchemy_boom': 0.18,
+            'ancient_wisdom': 0.14,
+            'divine_blessing': 0.18,
+            'echo_of_time': 0.14,
+            'gift_of_foresight': 0.10,
+            'record_book': 0.10,
+            'alchemy_storm': 0.08,
+            'alchemy_shield': 0.08,
+        };
+
+        // --- ПЕРЕМЕННЫЕ ДЛЯ ЭФФЕКТОВ ---
+        let stormPenalty = 5;
+        let shieldActive = false;
+
+        // --- ФУНКЦИИ СОБЫТИЙ ---
+        function showEventNotification(event) {
+            const container = document.getElementById('eventNotificationContainer');
+            const notif = document.createElement('div');
+            notif.className = 'event-notification';
+            notif.innerHTML = `
+                <span class="event-emoji">${event.emoji}</span>
+                <div class="event-name">${event.name}</div>
+                <div class="event-desc">${event.description}</div>
+                <div class="event-rarity ${event.rarity}">${event.rarity.toUpperCase()}</div>
+            `;
+            container.appendChild(notif);
+            
+            requestAnimationFrame(() => {
+                notif.classList.add('show');
+            });
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 500);
+            }, 4000);
+        }
+
+        function showEventNotificationText(text) {
+            const container = document.getElementById('eventNotificationContainer');
+            const notif = document.createElement('div');
+            notif.className = 'event-notification';
+            notif.style.minWidth = '200px';
+            notif.innerHTML = `
+                <div class="event-desc" style="font-size:16px; white-space:pre-line;">${text}</div>
+            `;
+            container.appendChild(notif);
+            
+            requestAnimationFrame(() => {
+                notif.classList.add('show');
+            });
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 500);
+            }, 4000);
+        }
+
+        function applyEventColor(event) {
+            const gameCard = document.getElementById('gameCard');
+            gameCard.style.borderColor = event.color;
+            gameCard.style.boxShadow = `0 0 30px ${event.color}44, inset 0 0 30px ${event.color}22`;
+        }
+
+        function removeEventColor() {
+            const gameCard = document.getElementById('gameCard');
+            gameCard.style.borderColor = '#444';
+            gameCard.style.boxShadow = 'none';
+        }
+
+        function triggerRandomEvent() {
+            if (activeEvent) return;
+            
+            const roll = Math.random();
+            let cumulative = 0;
+            let selectedEvent = null;
+            
+            for (const [id, chance] of Object.entries(eventChances)) {
+                cumulative += chance;
+                if (roll <= cumulative) {
+                    selectedEvent = safeEvents.find(e => e.id === id);
+                    break;
+                }
+            }
+            
+            if (!selectedEvent) return;
+            
+            activeEvent = selectedEvent;
+            eventTurnsLeft = selectedEvent.duration;
+            
+            if (selectedEvent.effect) selectedEvent.effect();
+            showEventNotification(selectedEvent);
+            applyEventColor(selectedEvent);
+        }
+
+        function processTurn() {
+            if (!activeEvent) return;
+            
+            eventTurnsLeft--;
+            
+            if (eventTurnsLeft <= 0) {
+                if (activeEvent.endEffect) activeEvent.endEffect();
+                showEventNotificationText(`⏰ Событие "${activeEvent.name}" завершилось`);
+                activeEvent = null;
+                removeEventColor();
+            }
+        }
+
+        function tryTriggerEvent() {
+            const currentTurn = turnCounter;
+            turnsSinceLastEvent++;
+            
+            if (currentTurn - lastEventTurn < EVENT_COOLDOWN) return;
+            
+            let chance = EVENT_CHANCE;
+            if (turnsSinceLastEvent > 10) {
+                chance += (turnsSinceLastEvent - 10) * 0.03;
+            }
+            chance = Math.min(chance, 0.8);
+            
+            if (Math.random() < chance) {
+                turnsSinceLastEvent = 0;
+                lastEventTurn = currentTurn;
+                triggerRandomEvent();
+            }
+        }
+
+        // --- ОСТАЛЬНЫЕ ФУНКЦИИ ИГРЫ (с изменениями) ---
+
         function showAchievementNotification(title) {
             const oldNotif = document.querySelector('.achievement-notification');
             if (oldNotif) oldNotif.remove();
@@ -920,6 +1260,12 @@
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === diff));
             document.getElementById('gameMsg').textContent = "Выберите два элемента для соединения";
             delete recipeCache[currentDiff];
+            // Сбрасываем события при смене режима
+            if (activeEvent) {
+                if (activeEvent.endEffect) activeEvent.endEffect();
+                activeEvent = null;
+                removeEventColor();
+            }
             loadState();
         }
 
@@ -987,9 +1333,11 @@
                     }
                     
                     openedElements.push(result);
-                    score += 100;
+                    const points = 100 * scoreMultiplier;
+                    score += points;
+                    turnCounter++;
                     
-                    let mainMsg = `✨ Новый элемент: ${result}! (+100 очков)`;
+                    let mainMsg = `✨ Новый элемент: ${result}! (+${points} очков)`;
                     
                     if (currentDiff === 'devil' && hintsUsed === 0 && errorPenaltySum === 0) {
                         if (firstCircleProgress < firstCircleChain.length && 
@@ -1017,13 +1365,26 @@
                     
                     msg.style.color = currentDiff === 'devil' ? '#ff4500' : '#ffd700';
                     msg.innerHTML = mainMsg;
+                    
+                    // Проверяем событие после успешной комбинации
+                    tryTriggerEvent();
+                    
+                    // Обрабатываем ход события
+                    processTurn();
                 } else {
                     msg.style.color = '#aaa';
                     msg.textContent = `Элемент "${result}" уже открыт.`;
                 }
             } else {
-                score = Math.max(0, score - 5);
-                errorPenaltySum += 5;
+                let penalty = 5;
+                if (stormPenalty > 5) penalty = stormPenalty;
+                if (shieldActive) {
+                    penalty = 0;
+                    shieldActive = false;
+                    showEventNotificationText('🛡️ Щит защитил от штрафа!');
+                }
+                score = Math.max(0, score - penalty);
+                errorPenaltySum += penalty;
                 if (currentDiff === 'devil') { 
                     devilSuccessStreak = 0; 
                     devilChainStep = 0;
@@ -1031,7 +1392,7 @@
                     localStorage.setItem('alchemy_first_circle_progress', 0);
                 }
                 msg.style.color = '#b22222';
-                msg.textContent = '❌ Элементы не соединяются (-5 очков)';
+                msg.textContent = `❌ Элементы не соединяются (-${penalty} очков)`;
             }
             saveState();
             slot1 = slot2 = null;
@@ -1096,6 +1457,15 @@
                 score = hintsUsed = errorPenaltySum = selfCombineCount = devilSuccessStreak = devilChainStep = 0;
                 firstCircleProgress = 0;
                 slot1 = slot2 = null;
+                if (activeEvent) {
+                    if (activeEvent.endEffect) activeEvent.endEffect();
+                    activeEvent = null;
+                    removeEventColor();
+                }
+                scoreMultiplier = 1;
+                turnCounter = 0;
+                lastEventTurn = 0;
+                turnsSinceLastEvent = 0;
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
                 localStorage.removeItem('alchemy_first_circle_progress');
