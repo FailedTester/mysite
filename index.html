@@ -194,7 +194,6 @@
             border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        /* Стили для уведомления о достижении */
         .achievement-notification {
             position: fixed;
             top: 20px;
@@ -215,13 +214,8 @@
             max-width: 90%;
             pointer-events: none;
         }
-        .achievement-notification .ach-icon {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-        .achievement-notification .ach-title {
-            color: #fff;
-        }
+        .achievement-notification .ach-icon { font-size: 24px; margin-right: 10px; }
+        .achievement-notification .ach-title { color: #fff; }
         @keyframes slideDown {
             from { opacity: 0; transform: translateX(-50%) translateY(-100px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -231,7 +225,7 @@
             to { opacity: 0; transform: translateX(-50%) translateY(-50px); }
         }
 
-        /* ===== Финальная трансформация режима ===== */
+        /* ===== Финальная трансформация ===== */
         .finale-overlay {
             position: fixed; inset: 0; z-index: 2000;
             display: flex; align-items: center; justify-content: center;
@@ -294,12 +288,13 @@
         }
         .finale-close:hover { opacity: 1; }
 
-        /* Человек — тёплое золотое сияние */
+        /* === Человек — тёплое золотое сияние === */
         .finale-human.show { background: radial-gradient(circle, rgba(255,215,0,0.22), rgba(20,12,0,0.92)); }
         .finale-human .finale-core { background: radial-gradient(circle, #fff8dd, #ffd700 55%, transparent 75%); box-shadow: 0 0 45px 12px rgba(255,215,0,0.5); }
-        .finale-human .finale-result-emoji, .finale-human .finale-result-label { color: #ffd700; }
+        .finale-human .finale-result-emoji, .finale-human .finale-result-label { color: #fff7d6; }  /* светлый, читаемый на тёмно-золотом фоне */
+        .finale-human .finale-result-desc { color: #f5e6b0; }
 
-        /* Маг — вихрь искр */
+        /* === Маг — вихрь искр === */
         .finale-mage.show { background: radial-gradient(circle, rgba(168,85,247,0.24), rgba(6,0,20,0.94)); }
         .finale-mage .finale-particle { animation-name: finaleSpiralIn; }
         @keyframes finaleSpiralIn {
@@ -307,9 +302,10 @@
             100% { transform: translate(-50%, -50%) rotate(calc(var(--angle) + 240deg)) translateY(0) scale(0.15); opacity: 0; }
         }
         .finale-mage .finale-core { background: radial-gradient(circle, #f3e8ff, #a855f7 55%, transparent 75%); box-shadow: 0 0 50px 14px rgba(168,85,247,0.55); }
-        .finale-mage .finale-result-emoji, .finale-mage .finale-result-label { color: #c084fc; }
+        .finale-mage .finale-result-emoji, .finale-mage .finale-result-label { color: #edd9ff; }
+        .finale-mage .finale-result-desc { color: #d4b8ff; }
 
-        /* Бог — вспышка абсолютного света */
+        /* === Бог — вспышка света === */
         .finale-god.show { background: radial-gradient(circle, rgba(255,255,255,0.35), rgba(8,8,28,0.95)); }
         .finale-god .finale-core {
             background: radial-gradient(circle, #ffffff, #fff3c4 45%, transparent 75%);
@@ -321,10 +317,11 @@
             50%  { opacity: 1; transform: scale(2.1); }
             100% { opacity: 0.95; transform: scale(1); }
         }
-        .finale-god .finale-result-emoji { color: #fff; text-shadow: 0 0 22px #ffd700, 0 0 46px #fff; }
-        .finale-god .finale-result-label { color: #ffe9a8; }
+        .finale-god .finale-result-emoji { color: #fff5e0; text-shadow: 0 0 22px #ffd700, 0 0 46px #fff; }
+        .finale-god .finale-result-label { color: #f5e6c8; }
+        .finale-god .finale-result-desc { color: #f0e0c0; }
 
-        /* Дьявол — поглощение пустотой */
+        /* === Дьявол — поглощение пустотой === */
         .finale-devil.show { background: radial-gradient(circle, rgba(90,0,0,0.28), rgba(0,0,0,0.97)); }
         .finale-devil .finale-particle { animation-name: finaleVoidSuck; }
         @keyframes finaleVoidSuck {
@@ -335,8 +332,9 @@
             background: radial-gradient(circle, #000 0%, #1a0000 55%, transparent 80%);
             box-shadow: 0 0 55px 16px rgba(255,34,0,0.35), inset 0 0 25px 6px rgba(255,0,0,0.4);
         }
-        .finale-devil .finale-result-emoji { color: #ff4500; text-shadow: 0 0 18px #ff0000; }
-        .finale-devil .finale-result-label { color: #ff9a7a; }
+        .finale-devil .finale-result-emoji { color: #ffb08c; text-shadow: 0 0 18px #ff0000; }
+        .finale-devil .finale-result-label { color: #ffb08c; }
+        .finale-devil .finale-result-desc { color: #e68a6a; }
 
         @media (prefers-reduced-motion: reduce) {
             .finale-particle { animation: none !important; opacity: 0 !important; }
@@ -451,7 +449,6 @@
         const initialElements = ["💧 Вода", "🔥 Огонь", "🌱 Земля", "💨 Воздух"];
         const devilInitialElements = ["🖤 Грех", "💀 Смерть", "🩸 Кровь", "⚡ Страх"];
 
-        // Цепочка для достижения "Первый Круг" (после 4 начальных элементов)
         const firstCircleChain = [
             "🏛️ Обитель Зла",
             "🥀 Тление", 
@@ -462,7 +459,6 @@
             "🔪 Убийство"
         ];
 
-        // Полные логические рецепты (сжатые)
         const fullRecipes = {
             "💧 Вода+🔥 Огонь":"💨 Пар","🔥 Огонь+🌱 Земля":"🌋 Лава","💧 Вода+🌱 Земля":"💩 Грязь",
             "💨 Воздух+🌱 Земля":"🌪️ Пыль","🔥 Огонь+💨 Воздух":"⚡ Энергия","💧 Вода+💨 Воздух":"🌧️ Дождь",
@@ -558,7 +554,6 @@
             "😇 Святость+✨ Добро":"👼 Святой Дух"
         };
 
-        // Дьявольские рецепты (сжатые)
         const devilRecipes = {
             "🖤 Грех+⚡ Страх":"🏛️ Обитель Зла","🖤 Грех+💀 Смерть":"🥀 Тление","🖤 Грех+🩸 Кровь":"💋 Похоть",
             "💀 Смерть+⚡ Страх":"👻 Ужас","🖤 Грех+🖤 Грех":"🔥 Порочность","💀 Смерть+💀 Смерть":"⚰️ Погост",
@@ -643,7 +638,6 @@
             "🌌 Ледяная Бездна+🌌 Смерть Галактики":"🕳️ Великое Ничто","🕳️ Великое Ничто+✝️ Конец Времен ✝️":"✝️ Абсолютный Конец ✝️"
         };
 
-        // Подсчет достижимых элементов
         function countReachable(initial, recipes) {
             const opened = new Set(initial);
             let added = true;
@@ -662,7 +656,6 @@
             return opened.size;
         }
 
-        // Получение рецептов для дьявола
         function getDevilRecipes() {
             const entries = Object.entries(devilRecipes);
             const result = {};
@@ -711,7 +704,6 @@
 
         const limits = { human:55, mage:110, god:200, devil: Math.min(countReachable(devilInitialElements, devilRecipes), 200) };
 
-        // ===== Финальная трансформация режима: все элементы сливаются в один =====
         const finalElements = {
             human: { name: "👑 Венец Человечности", label: "Финал режима «Человек»", desc: "Все грани человеческого пути соединились в единое целое.", cls: "finale-human" },
             mage:  { name: "✨ Животворящая искра", label: "Финал режима «Маг»", desc: "Магия сплела воедино все стихии мироздания.", cls: "finale-mage" },
@@ -726,7 +718,6 @@
             const overlay = document.createElement('div');
             overlay.className = `finale-overlay ${info.cls}`;
 
-            // Небольшая, лёгкая для слабых устройств выборка элементов-частиц
             const sampleCount = Math.min(14, openedElements.length);
             const sample = [...openedElements].sort(() => 0.5 - Math.random()).slice(0, sampleCount);
             const particlesHtml = sample.map((el, i) => {
@@ -758,7 +749,7 @@
 
             requestAnimationFrame(() => overlay.classList.add('show'));
             setTimeout(() => overlay.classList.add('reveal'), 1500);
-            setTimeout(closeFinale, 6000);
+            setTimeout(closeFinale, 15000); // 15 секунд
         }
 
         function maybeTriggerFinale() {
@@ -791,7 +782,6 @@
         let firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
         const recipeCache={};
 
-        // Функция показа уведомления о достижении
         function showAchievementNotification(title) {
             const oldNotif = document.querySelector('.achievement-notification');
             if (oldNotif) oldNotif.remove();
@@ -819,7 +809,6 @@
             return recs[el1+'+'+el2] || recs[el2+'+'+el1] || null;
         }
 
-        // Функция разблокировки достижения - ТОЛЬКО уведомление и сохранение
         function unlockAchievement(id) {
             if (achievements.includes(id)) return;
             achievements.push(id);
@@ -845,7 +834,6 @@
             }).join('');
         }
 
-        // Функция проверки достижений с выводом в лог
         function checkAndUnlockAchievement(id, mainMsg) {
             if (achievements.includes(id)) return mainMsg;
             achievements.push(id);
@@ -860,7 +848,6 @@
             let currentMsg = msg.innerHTML;
             let updated = false;
             
-            // Проверяем каждое достижение
             const checks = [
                 { id: 1, condition: openedElements.length > 4 },
                 { id: 2, condition: openedElements.length >= 30 },
@@ -889,9 +876,7 @@
                 }
             }
             
-            if (updated) {
-                msg.innerHTML = currentMsg;
-            }
+            if (updated) msg.innerHTML = currentMsg;
         }
 
         function loadState() {
@@ -1006,7 +991,6 @@
                     
                     let mainMsg = `✨ Новый элемент: ${result}! (+100 очков)`;
                     
-                    // Проверка для достижения 11 "Первый Круг"
                     if (currentDiff === 'devil' && hintsUsed === 0 && errorPenaltySum === 0) {
                         if (firstCircleProgress < firstCircleChain.length && 
                             result === firstCircleChain[firstCircleProgress]) {
@@ -1014,7 +998,6 @@
                             localStorage.setItem('alchemy_first_circle_progress', firstCircleProgress);
                             
                             if (firstCircleProgress === firstCircleChain.length) {
-                                // Разблокируем достижение 11 с сообщением в логе
                                 if (!achievements.includes(11)) {
                                     achievements.push(11);
                                     localStorage.setItem('alchemy_achievements', JSON.stringify(achievements));
