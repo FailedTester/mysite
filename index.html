@@ -870,7 +870,7 @@
         let stormPenalty = 0;
         let shieldActive = false;
 
-        // --- СПИСОК СОБЫТИЙ (ИСПРАВЛЕННЫЙ) ---
+        // --- СПИСОК СОБЫТИЙ (УЛУЧШЕННЫЙ) ---
         const safeEvents = [
             {
                 id: 'alchemy_boom',
@@ -885,16 +885,26 @@
             {
                 id: 'ancient_wisdom',
                 name: '📖 Мудрость предков',
-                description: 'Показывает рецепт',
+                description: 'Показывает рецепт, который можно сделать сейчас',
                 emoji: '🧠',
                 duration: 1,
                 effect: () => {
                     const recs = getActiveRecipes();
-                    const entries = Object.entries(recs);
-                    if (entries.length > 0) {
-                        const [key, result] = entries[Math.floor(Math.random() * entries.length)];
+                    const available = [];
+                    
+                    for (const [key, result] of Object.entries(recs)) {
+                        if (openedElements.includes(result)) continue;
                         const [el1, el2] = key.split('+');
-                        updateEventExtra(`💡 ${el1} + ${el2} = ${result}`);
+                        if (openedElements.includes(el1) && openedElements.includes(el2)) {
+                            available.push({ el1, el2, result });
+                        }
+                    }
+                    
+                    if (available.length > 0) {
+                        const random = available[Math.floor(Math.random() * available.length)];
+                        updateEventExtra(`💡 Сейчас можно создать:\n${random.el1} + ${random.el2} = ${random.result}`);
+                    } else {
+                        updateEventExtra('💡 Нет доступных рецептов для крафта');
                     }
                 },
                 color: '#4CAF50'
@@ -912,21 +922,31 @@
             {
                 id: 'echo_of_time',
                 name: '⏳ Эхо времени',
-                description: '3 рецепта',
+                description: 'Показывает 3 рецепта из будущего',
                 emoji: '🔄',
                 duration: 1,
                 effect: () => {
                     const recs = getActiveRecipes();
-                    const entries = Object.entries(recs);
-                    if (entries.length >= 3) {
-                        const shuffled = [...entries].sort(() => Math.random() - 0.5);
-                        const selected = shuffled.slice(0, 3);
-                        let msg = '📜 Рецепты:\n';
-                        selected.forEach(([key, value]) => {
-                            const [el1, el2] = key.split('+');
-                            msg += `\n${el1} + ${el2} = ${value}`;
+                    const future = [];
+                    
+                    for (const [key, result] of Object.entries(recs)) {
+                        if (openedElements.includes(result)) continue;
+                        const [el1, el2] = key.split('+');
+                        if (!openedElements.includes(el1) || !openedElements.includes(el2)) {
+                            future.push({ el1, el2, result });
+                        }
+                    }
+                    
+                    if (future.length > 0) {
+                        const shuffled = future.sort(() => Math.random() - 0.5);
+                        const selected = shuffled.slice(0, Math.min(3, shuffled.length));
+                        let msg = '🔮 Рецепты из будущего:\n';
+                        selected.forEach(({ el1, el2, result }) => {
+                            msg += `\n${el1} + ${el2} = ${result}`;
                         });
                         updateEventExtra(msg);
+                    } else {
+                        updateEventExtra('🔮 Все рецепты уже открыты!');
                     }
                 },
                 color: '#00BCD4'
@@ -1047,7 +1067,6 @@
             activeEvent = selectedEvent;
             eventTurnsLeft = selectedEvent.duration;
             
-            // Очищаем доп. информацию
             updateEventExtra('');
             
             if (selectedEvent.effect) selectedEvent.effect();
@@ -1238,9 +1257,8 @@
             maybeTriggerFinale();
         }
 
-        // ===== ИСПРАВЛЕННАЯ setDifficulty (сохраняет событие) =====
+        // ===== setDifficulty (сохраняет событие) =====
         function setDifficulty(diff) {
-            // Сохраняем текущее состояние события перед сменой
             const savedEvent = activeEvent;
             const savedTurns = eventTurnsLeft;
             const savedExtra = document.getElementById('eventIndicatorExtra').textContent;
@@ -1251,7 +1269,6 @@
             document.getElementById('gameMsg').textContent = "Выберите два элемента для соединения";
             delete recipeCache[currentDiff];
             
-            // Восстанавливаем событие, если оно было активно
             if (savedEvent) {
                 const eventData = safeEvents.find(e => e.id === savedEvent.id);
                 if (eventData) {
@@ -1329,12 +1346,11 @@
 
         const clearSlot = num => { if (num === 1) slot1 = null; if (num === 2) slot2 = null; updateUI(); };
 
-        // ===== ИСПРАВЛЕННАЯ tryCombine (щит блокирует штрафы, буря добавляет +10) =====
+        // ===== tryCombine =====
         function tryCombine() {
             const msg = document.getElementById('gameMsg');
             const recs = getActiveRecipes();
             
-            // ✅ ХОД СЧИТАЕТСЯ ВСЕГДА
             processTurn();
             
             const result = findRecipe(slot1, slot2, recs);
@@ -1392,15 +1408,12 @@
                     msg.textContent = `Элемент "${result}" уже открыт.`;
                 }
             } else {
-                // ❌ НЕУДАЧНАЯ КОМБИНАЦИЯ
-                let penalty = 5; // Стандартный штраф
+                let penalty = 5;
                 
-                // Если активна буря — добавляем +10 к штрафу
                 if (stormPenalty > 0) {
-                    penalty = 5 + stormPenalty; // 5 + 10 = 15
+                    penalty = 5 + stormPenalty;
                 }
                 
-                // Если активен щит — штраф 0
                 let shieldUsed = false;
                 if (shieldActive) {
                     penalty = 0;
