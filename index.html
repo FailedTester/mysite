@@ -230,6 +230,119 @@
             from { opacity: 1; transform: translateX(-50%) translateY(0); }
             to { opacity: 0; transform: translateX(-50%) translateY(-50px); }
         }
+
+        /* ===== Финальная трансформация режима ===== */
+        .finale-overlay {
+            position: fixed; inset: 0; z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease, background 0.8s ease;
+        }
+        .finale-overlay.show { opacity: 1; pointer-events: auto; }
+        .finale-stage {
+            position: relative;
+            width: min(88vw, 380px); height: min(88vw, 380px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .finale-particle {
+            position: absolute; top: 50%; left: 50%;
+            font-size: clamp(16px, 4vw, 22px);
+            transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-150px) rotate(calc(var(--angle) * -1));
+            opacity: 0.9;
+            animation: finaleConverge 1.3s ease-in forwards;
+            animation-delay: var(--delay);
+            will-change: transform, opacity;
+        }
+        @keyframes finaleConverge {
+            0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-150px) rotate(calc(var(--angle) * -1)) scale(1); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) rotate(calc(var(--angle) * -1)) scale(0.2); opacity: 0; }
+        }
+        .finale-core {
+            position: absolute; width: 22px; height: 22px; border-radius: 50%;
+            opacity: 0; transform: scale(0.3);
+        }
+        .finale-overlay.show .finale-core { animation: finalePulse 1.6s ease-out 1.2s forwards; }
+        @keyframes finalePulse {
+            0%   { opacity: 0; transform: scale(0.3); }
+            55%  { opacity: 1; transform: scale(1.6); }
+            100% { opacity: 0.9; transform: scale(1); }
+        }
+        .finale-result {
+            position: absolute; text-align: center; padding: 0 16px;
+            opacity: 0; transform: scale(0.7);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .finale-overlay.reveal .finale-result { opacity: 1; transform: scale(1); }
+        .finale-overlay.reveal .finale-particle,
+        .finale-overlay.reveal .finale-core { opacity: 0 !important; }
+        .finale-result-emoji {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(22px, 6vw, 34px); font-weight: bold;
+            text-shadow: 0 0 20px currentColor;
+        }
+        .finale-result-label {
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+            opacity: 0.7; margin-bottom: 8px;
+        }
+        .finale-result-desc { margin-top: 12px; font-size: 13px; opacity: 0.85; line-height: 1.5; }
+        .finale-close {
+            position: absolute; top: 18px; right: 18px;
+            background: none; border: 1px solid currentColor; color: #fff;
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 16px; cursor: pointer; opacity: 0.6; z-index: 2;
+        }
+        .finale-close:hover { opacity: 1; }
+
+        /* Человек — тёплое золотое сияние */
+        .finale-human.show { background: radial-gradient(circle, rgba(255,215,0,0.22), rgba(20,12,0,0.92)); }
+        .finale-human .finale-core { background: radial-gradient(circle, #fff8dd, #ffd700 55%, transparent 75%); box-shadow: 0 0 45px 12px rgba(255,215,0,0.5); }
+        .finale-human .finale-result-emoji, .finale-human .finale-result-label { color: #ffd700; }
+
+        /* Маг — вихрь искр */
+        .finale-mage.show { background: radial-gradient(circle, rgba(168,85,247,0.24), rgba(6,0,20,0.94)); }
+        .finale-mage .finale-particle { animation-name: finaleSpiralIn; }
+        @keyframes finaleSpiralIn {
+            0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-150px) scale(1); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) rotate(calc(var(--angle) + 240deg)) translateY(0) scale(0.15); opacity: 0; }
+        }
+        .finale-mage .finale-core { background: radial-gradient(circle, #f3e8ff, #a855f7 55%, transparent 75%); box-shadow: 0 0 50px 14px rgba(168,85,247,0.55); }
+        .finale-mage .finale-result-emoji, .finale-mage .finale-result-label { color: #c084fc; }
+
+        /* Бог — вспышка абсолютного света */
+        .finale-god.show { background: radial-gradient(circle, rgba(255,255,255,0.35), rgba(8,8,28,0.95)); }
+        .finale-god .finale-core {
+            background: radial-gradient(circle, #ffffff, #fff3c4 45%, transparent 75%);
+            box-shadow: 0 0 70px 26px rgba(255,255,255,0.6);
+            animation-name: finaleBigBang;
+        }
+        @keyframes finaleBigBang {
+            0%   { opacity: 0; transform: scale(0.3); }
+            50%  { opacity: 1; transform: scale(2.1); }
+            100% { opacity: 0.95; transform: scale(1); }
+        }
+        .finale-god .finale-result-emoji { color: #fff; text-shadow: 0 0 22px #ffd700, 0 0 46px #fff; }
+        .finale-god .finale-result-label { color: #ffe9a8; }
+
+        /* Дьявол — поглощение пустотой */
+        .finale-devil.show { background: radial-gradient(circle, rgba(90,0,0,0.28), rgba(0,0,0,0.97)); }
+        .finale-devil .finale-particle { animation-name: finaleVoidSuck; }
+        @keyframes finaleVoidSuck {
+            0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-150px) scale(1); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) rotate(calc(var(--angle) * 3)) translateY(0) scale(0); opacity: 0; }
+        }
+        .finale-devil .finale-core {
+            background: radial-gradient(circle, #000 0%, #1a0000 55%, transparent 80%);
+            box-shadow: 0 0 55px 16px rgba(255,34,0,0.35), inset 0 0 25px 6px rgba(255,0,0,0.4);
+        }
+        .finale-devil .finale-result-emoji { color: #ff4500; text-shadow: 0 0 18px #ff0000; }
+        .finale-devil .finale-result-label { color: #ff9a7a; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .finale-particle { animation: none !important; opacity: 0 !important; }
+            .finale-core { animation: none !important; opacity: 0.9 !important; transform: scale(1) !important; }
+            .finale-overlay { transition: opacity 0.2s ease; }
+        }
     </style>
 </head>
 <body>
@@ -598,6 +711,64 @@
 
         const limits = { human:55, mage:110, god:200, devil: Math.min(countReachable(devilInitialElements, devilRecipes), 200) };
 
+        // ===== Финальная трансформация режима: все элементы сливаются в один =====
+        const finalElements = {
+            human: { name: "👑 Венец Человечности", label: "Финал режима «Человек»", desc: "Все грани человеческого пути соединились в единое целое.", cls: "finale-human" },
+            mage:  { name: "✨ Животворящая искра", label: "Финал режима «Маг»", desc: "Магия сплела воедино все стихии мироздания.", cls: "finale-mage" },
+            god:   { name: "♾️ Абсолютное Наличие", label: "Финал режима «Бог»", desc: "Всё сущее слилось в единое божественное присутствие.", cls: "finale-god" },
+            devil: { name: "🕳️ Абсолютное отсутствие", label: "Финал режима «Дьявол»", desc: "Всё было поглощено пустотой.", cls: "finale-devil" }
+        };
+
+        function showFinaleEffect(diff) {
+            const info = finalElements[diff];
+            if (!info) return;
+
+            const overlay = document.createElement('div');
+            overlay.className = `finale-overlay ${info.cls}`;
+
+            // Небольшая, лёгкая для слабых устройств выборка элементов-частиц
+            const sampleCount = Math.min(14, openedElements.length);
+            const sample = [...openedElements].sort(() => 0.5 - Math.random()).slice(0, sampleCount);
+            const particlesHtml = sample.map((el, i) => {
+                const angle = Math.round((360 / sampleCount) * i);
+                const delay = (i * 0.045).toFixed(2);
+                return `<span class="finale-particle" style="--angle:${angle}deg; --delay:${delay}s;">${el}</span>`;
+            }).join('');
+
+            overlay.innerHTML = `
+                <div class="finale-stage">
+                    <div class="finale-particles">${particlesHtml}</div>
+                    <div class="finale-core"></div>
+                    <div class="finale-result">
+                        <div class="finale-result-label">${info.label}</div>
+                        <div class="finale-result-emoji">${info.name}</div>
+                        <div class="finale-result-desc">${info.desc}</div>
+                    </div>
+                </div>
+                <button class="finale-close" aria-label="Закрыть">✕</button>
+            `;
+            document.body.appendChild(overlay);
+
+            const closeFinale = () => {
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 500);
+            };
+            overlay.querySelector('.finale-close').onclick = closeFinale;
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeFinale(); });
+
+            requestAnimationFrame(() => overlay.classList.add('show'));
+            setTimeout(() => overlay.classList.add('reveal'), 1500);
+            setTimeout(closeFinale, 6000);
+        }
+
+        function maybeTriggerFinale() {
+            const diff = currentDiff;
+            if (openedElements.length < limits[diff]) return;
+            if (localStorage.getItem(`alchemy_final_${diff}`) === '1') return;
+            localStorage.setItem(`alchemy_final_${diff}`, '1');
+            showFinaleEffect(diff);
+        }
+
         const achievementsList = [
             {id:1,title:"Искра творения",desc:"Соедините первые два элемента и получите новый."},
             {id:2,title:"Исследователь стихий",desc:"Откройте 30 уникальных элементов в игре."},
@@ -736,6 +907,7 @@
             firstCircleProgress = parseInt(localStorage.getItem('alchemy_first_circle_progress')) || 0;
             delete recipeCache[currentDiff];
             updateUI();
+            maybeTriggerFinale();
         }
 
         function saveState() {
@@ -754,6 +926,7 @@
             }
             updateUI();
             checkAchievements();
+            maybeTriggerFinale();
         }
 
         function setDifficulty(diff) {
@@ -943,6 +1116,7 @@
                 localStorage.removeItem(`alchemy_best_fixed_${currentDiff}`);
                 localStorage.removeItem(`alchemy_high_${currentDiff}`);
                 localStorage.removeItem('alchemy_first_circle_progress');
+                localStorage.removeItem(`alchemy_final_${currentDiff}`);
                 delete recipeCache[currentDiff];
                 saveState();
                 document.getElementById('gameMsg').textContent = "Прогресс сброшен.";
