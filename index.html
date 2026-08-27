@@ -1208,21 +1208,44 @@
             maybeTriggerFinale();
         }
 
+        // ===== ИСПРАВЛЕННАЯ setDifficulty (сохраняет событие) =====
         function setDifficulty(diff) {
+            // Сохраняем текущее состояние события перед сменой
+            const savedEvent = activeEvent;
+            const savedTurns = eventTurnsLeft;
+            
             currentDiff = diff;
             slot1 = slot2 = null;
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === diff));
             document.getElementById('gameMsg').textContent = "Выберите два элемента для соединения";
             delete recipeCache[currentDiff];
-            // Сбрасываем события при смене режима
-            if (activeEvent) {
-                if (activeEvent.endEffect) activeEvent.endEffect();
-                activeEvent = null;
+            
+            // Восстанавливаем событие, если оно было активно
+            if (savedEvent) {
+                const eventData = safeEvents.find(e => e.id === savedEvent.id);
+                if (eventData) {
+                    activeEvent = eventData;
+                    eventTurnsLeft = savedTurns;
+                    if (activeEvent.effect) activeEvent.effect();
+                    updateEventIndicator();
+                    const gameCard = document.getElementById('gameCard');
+                    gameCard.style.borderColor = activeEvent.color;
+                    gameCard.style.boxShadow = `0 0 30px ${activeEvent.color}44`;
+                } else {
+                    activeEvent = null;
+                    eventTurnsLeft = 0;
+                    const gameCard = document.getElementById('gameCard');
+                    gameCard.style.borderColor = '#444';
+                    gameCard.style.boxShadow = 'none';
+                    updateEventIndicator();
+                }
+            } else {
                 const gameCard = document.getElementById('gameCard');
                 gameCard.style.borderColor = '#444';
                 gameCard.style.boxShadow = 'none';
                 updateEventIndicator();
             }
+            
             loadState();
         }
 
@@ -1271,12 +1294,12 @@
 
         const clearSlot = num => { if (num === 1) slot1 = null; if (num === 2) slot2 = null; updateUI(); };
 
-        // ===== ИСПРАВЛЕННАЯ tryCombine =====
+        // ===== ИСПРАВЛЕННАЯ tryCombine (щит блокирует штрафы) =====
         function tryCombine() {
             const msg = document.getElementById('gameMsg');
             const recs = getActiveRecipes();
             
-            // ✅ ХОД СЧИТАЕТСЯ ВСЕГДА (и при ошибке, и при успехе)
+            // ✅ ХОД СЧИТАЕТСЯ ВСЕГДА
             processTurn();
             
             const result = findRecipe(slot1, slot2, recs);
@@ -1334,23 +1357,31 @@
                     msg.textContent = `Элемент "${result}" уже открыт.`;
                 }
             } else {
+                // ❌ НЕУДАЧНАЯ КОМБИНАЦИЯ
                 let penalty = 5;
+                let shieldUsed = false;
+                
                 if (stormPenalty > 5) penalty = stormPenalty;
+                
+                // ✅ Если активен щит — штраф 0
                 if (shieldActive) {
                     penalty = 0;
-                    shieldActive = false;
+                    shieldUsed = true;
                     msg.innerHTML = '🛡️ Щит защитил от штрафа!';
                     msg.style.color = '#00BCD4';
                 }
+                
                 score = Math.max(0, score - penalty);
                 errorPenaltySum += penalty;
+                
                 if (currentDiff === 'devil') { 
                     devilSuccessStreak = 0; 
                     devilChainStep = 0;
                     firstCircleProgress = 0;
                     localStorage.setItem('alchemy_first_circle_progress', 0);
                 }
-                if (!shieldActive) {
+                
+                if (!shieldUsed) {
                     msg.style.color = '#b22222';
                     msg.textContent = `❌ Элементы не соединяются (-${penalty} очков)`;
                 }
